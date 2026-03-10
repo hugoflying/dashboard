@@ -4,187 +4,192 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard Turnaround</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
   <style>
     :root{
-      --bg:#0f1115;
-      --card:#151922;
-      --text:#e5e7eb;
-      --muted:#9ca3af;
-      --border:rgba(255,255,255,.08);
-      --ok:#16a34a;
-      --warn:#f59e0b;
-      --danger:#ef4444;
-      --info:#2563eb;
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --border:rgba(17,24,39,.08);
+      --shadow:0 10px 24px rgba(0,0,0,.08);
     }
 
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      font-family:Arial, sans-serif;
-      background:var(--bg);
-      color:var(--text);
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100%;
     }
 
-    .wrap{
-      max-width:1600px;
-      margin:0 auto;
-      padding:16px;
+    .page-wrap{
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .dashboard-card{
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      background: var(--card);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      height: 100%;
+    }
+
+    .dashboard-card .card-content{
+      padding: 1rem;
+    }
+
+    .flight-title{
+      font-size: 1.35rem;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .flight-subtitle{
+      color: var(--muted);
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .muted{
+      color: var(--muted);
+    }
+
+    .kv-grid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: .75rem;
+      margin-top: .75rem;
+      margin-bottom: .9rem;
+    }
+
+    .kv-box{
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: .8rem;
+      background: rgba(255,255,255,.55);
+    }
+
+    .kv-k{
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--muted);
+      font-weight: 800;
+      margin-bottom: .25rem;
+    }
+
+    .kv-v{
+      font-size: 1rem;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .cd-value{
+      font-size: 1.25rem;
+      font-weight: 900;
+    }
+
+    .timeline-wrap{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.45rem;
+      margin-top:.35rem;
+    }
+
+    .timeline-chip{
+      border-radius: 999px;
+      padding: .4rem .7rem;
+      font-size: .78rem;
+      font-weight: 800;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--muted);
+    }
+
+    .timeline-chip.is-done{
+      background: #e8f0ff;
+      color: #0f3d91;
+      border-color: #bcd0ff;
     }
 
     .topbar{
       display:flex;
-      justify-content:space-between;
       align-items:center;
-      gap:12px;
-      margin-bottom:16px;
+      justify-content:space-between;
+      gap:1rem;
       flex-wrap:wrap;
+      margin-bottom: 1rem;
     }
 
-    .title{
-      font-size:1.4rem;
-      font-weight:700;
+    .topbar h1{
+      font-size: 1.5rem;
+      font-weight: 900;
+      margin: 0;
     }
 
-    .meta{
-      color:var(--muted);
-      font-size:.95rem;
+    .empty-box{
+      border: 2px dashed var(--border);
+      border-radius: 18px;
+      padding: 2rem;
+      text-align:center;
+      color: var(--muted);
+      background: #fff;
     }
 
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));
-      gap:14px;
+    .status-tag{
+      font-weight: 900;
+      border-radius: 999px;
     }
 
-    .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:14px;
-      box-shadow:0 8px 24px rgba(0,0,0,.25);
-    }
-
-    .card-head{
+    .header-line{
       display:flex;
       justify-content:space-between;
       align-items:flex-start;
-      gap:10px;
-      margin-bottom:10px;
+      gap:1rem;
     }
 
-    .flight{
-      font-size:1.25rem;
-      font-weight:800;
-      line-height:1.2;
-    }
-
-    .route{
-      color:var(--muted);
-      font-size:.95rem;
-      margin-top:4px;
-    }
-
-    .immat{
-      font-size:.9rem;
-      color:var(--muted);
+    .small-meta{
       text-align:right;
-    }
-
-    .status{
-      display:inline-block;
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:.82rem;
+      font-size:.85rem;
+      color: var(--muted);
       font-weight:700;
-      margin-bottom:12px;
     }
 
-    .status.info{ background:rgba(37,99,235,.18); color:#93c5fd; }
-    .status.ok{ background:rgba(22,163,74,.18); color:#86efac; }
-    .status.warn{ background:rgba(245,158,11,.18); color:#fcd34d; }
-    .status.danger{ background:rgba(239,68,68,.18); color:#fca5a5; }
-
-    .kv{
-      display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:10px;
-      margin-bottom:12px;
+    @media (max-width: 768px){
+      .kv-grid{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
 
-    .box{
-      background:rgba(255,255,255,.03);
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:10px;
-      min-height:58px;
-    }
-
-    .k{
-      font-size:.72rem;
-      text-transform:uppercase;
-      color:var(--muted);
-      margin-bottom:6px;
-      font-weight:700;
-      letter-spacing:.04em;
-    }
-
-    .v{
-      font-size:1rem;
-      font-weight:800;
-    }
-
-    .cd{
-      font-size:1.25rem;
-      font-weight:900;
-    }
-
-    .cd.ok{ color:#86efac; }
-    .cd.warn{ color:#fcd34d; }
-    .cd.danger{ color:#fca5a5; }
-
-    .timeline{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-    }
-
-    .step{
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:.8rem;
-      font-weight:700;
-      border:1px solid var(--border);
-      color:var(--muted);
-      background:rgba(255,255,255,.03);
-    }
-
-    .step.done{
-      color:#fff;
-      background:rgba(37,99,235,.22);
-      border-color:rgba(37,99,235,.35);
-    }
-
-    .empty{
-      color:var(--muted);
-      padding:24px;
-      text-align:center;
-      border:1px dashed var(--border);
-      border-radius:16px;
+    @media (max-width: 480px){
+      .kv-grid{
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="topbar">
-      <div>
-        <div class="title">Dashboard Turnaround</div>
-        <div class="meta" id="connState">Connexion…</div>
-      </div>
-      <div class="meta" id="lastUpdate">--</div>
-    </div>
+  <section class="section">
+    <div class="page-wrap">
 
-    <div id="cards" class="grid"></div>
-  </div>
+      <div class="topbar">
+        <div>
+          <h1>Dashboard Turnaround</h1>
+          <p class="muted mb-0">Vols en cours de traitement</p>
+        </div>
+
+        <div class="tags are-medium mb-0">
+          <span id="connState" class="tag is-warning status-tag">Connexion…</span>
+          <span id="lastUpdate" class="tag is-light status-tag">--</span>
+        </div>
+      </div>
+
+      <div id="cards" class="columns is-multiline"></div>
+
+    </div>
+  </section>
 
   <script>
     const socket = new WebSocket("wss://turnaround-sync.deruellehugo-49c.workers.dev/dashboard");
@@ -204,7 +209,7 @@
     function computeCD(flight) {
       const ref = flight.AOBT || flight.EOBT || flight.SOBT || "";
       const mins = parseTimeToMinutes(ref);
-      if (mins === null) return { text: "--", cls: "" };
+      if (mins === null) return { text: "--", bulmaClass: "has-text-grey" };
 
       const now = new Date();
       const nowMins = now.getHours() * 60 + now.getMinutes();
@@ -218,39 +223,39 @@
       const hh = String(Math.floor(abs / 60)).padStart(2, "0");
       const mm = String(abs % 60).padStart(2, "0");
 
-      let cls = "ok";
-      if (diff <= 15 && diff >= 0) cls = "warn";
-      if (diff < 0) cls = "danger";
+      let bulmaClass = "has-text-success";
+      if (diff <= 15 && diff >= 0) bulmaClass = "has-text-warning";
+      if (diff < 0) bulmaClass = "has-text-danger";
 
       return {
         text: `${sign}${hh}:${mm}`,
-        cls
+        bulmaClass
       };
     }
 
     function computeStatus(f) {
       if (hasValue(f.AOBT)) {
-        return { text: "Départ", cls: "ok" };
+        return { text: "Départ", tagClass: "is-success" };
       }
       if (hasValue(f.FermeturePorteAvion)) {
-        return { text: "Porte avion fermée", cls: "info" };
+        return { text: "Porte avion fermée", tagClass: "is-link" };
       }
       if (hasValue(f.AvionDernierEmbarque)) {
-        return { text: "Embarquement terminé", cls: "ok" };
+        return { text: "Embarquement terminé", tagClass: "is-success" };
       }
       if (hasValue(f.AvionPremierEmbarque)) {
-        return { text: "Embarquement en cours", cls: "info" };
+        return { text: "Embarquement en cours", tagClass: "is-link" };
       }
       if (hasValue(f.DernierDebarque)) {
-        return { text: "Débarquement terminé", cls: "ok" };
+        return { text: "Débarquement terminé", tagClass: "is-success" };
       }
       if (hasValue(f.PremierDebarque)) {
-        return { text: "Débarquement en cours", cls: "info" };
+        return { text: "Débarquement en cours", tagClass: "is-link" };
       }
       if (hasValue(f.AIBT)) {
-        return { text: "Au bloc", cls: "warn" };
+        return { text: "Au bloc", tagClass: "is-warning" };
       }
-      return { text: "En attente", cls: "warn" };
+      return { text: "En attente", tagClass: "is-light" };
     }
 
     function isActiveFlight(f) {
@@ -274,13 +279,13 @@
         ["Débarquement terminé", hasValue(f.DernierDebarque)],
         ["Embarquement en cours", hasValue(f.AvionPremierEmbarque)],
         ["Embarquement terminé", hasValue(f.AvionDernierEmbarque)],
-        ["Porte fermée", hasValue(f.FermeturePorteAvion)],
+        ["Porte avion fermée", hasValue(f.FermeturePorteAvion)],
         ["Départ", hasValue(f.AOBT)]
       ];
 
-      return steps.map(([label, done]) =>
-        `<span class="step ${done ? "done" : ""}">${label}</span>`
-      ).join("");
+      return steps.map(([label, done]) => {
+        return `<span class="timeline-chip ${done ? "is-done" : ""}">${label}</span>`;
+      }).join("");
     }
 
     function render() {
@@ -295,7 +300,13 @@
         });
 
       if (!activeFlights.length) {
-        cards.innerHTML = `<div class="empty">Aucun vol en cours de traitement</div>`;
+        cards.innerHTML = `
+          <div class="column is-12">
+            <div class="empty-box">
+              Aucun vol en cours de traitement
+            </div>
+          </div>
+        `;
         return;
       }
 
@@ -304,60 +315,75 @@
         const status = computeStatus(f);
 
         return `
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <div class="flight">${f.NVol || "--"}</div>
-                <div class="route">${f.To || "--"}</div>
-              </div>
-              <div class="immat">${f.Immat || ""}</div>
-            </div>
+          <div class="column is-4-desktop is-6-tablet is-12-mobile">
+            <div class="card dashboard-card">
+              <div class="card-content">
+                <div class="header-line">
+                  <div>
+                    <div class="flight-title">${f.NVol || "--"}</div>
+                    <div class="flight-subtitle">${f.To || "--"}</div>
+                  </div>
+                  <div class="small-meta">
+                    <div>${f.Immat || ""}</div>
+                  </div>
+                </div>
 
-            <div class="status ${status.cls}">${status.text}</div>
+                <div class="mt-3 mb-3">
+                  <span class="tag ${status.tagClass} is-medium status-tag">${status.text}</span>
+                </div>
 
-            <div class="kv">
-              <div class="box">
-                <div class="k">SIBT</div>
-                <div class="v">${f.SIBT || "--:--"}</div>
-              </div>
-              <div class="box">
-                <div class="k">AIBT</div>
-                <div class="v">${f.AIBT || "--:--"}</div>
-              </div>
-              <div class="box">
-                <div class="k">SOBT</div>
-                <div class="v">${f.SOBT || "--:--"}</div>
-              </div>
-              <div class="box">
-                <div class="k">AOBT / EOBT</div>
-                <div class="v">${f.AOBT || f.EOBT || "--:--"}</div>
-              </div>
-              <div class="box">
-                <div class="k">CD</div>
-                <div class="cd ${cd.cls}">${cd.text}</div>
-              </div>
-            </div>
+                <div class="kv-grid">
+                  <div class="kv-box">
+                    <div class="kv-k">SIBT</div>
+                    <div class="kv-v">${f.SIBT || "--:--"}</div>
+                  </div>
 
-            <div class="timeline">
-              ${renderSteps(f)}
+                  <div class="kv-box">
+                    <div class="kv-k">AIBT</div>
+                    <div class="kv-v">${f.AIBT || "--:--"}</div>
+                  </div>
+
+                  <div class="kv-box">
+                    <div class="kv-k">SOBT</div>
+                    <div class="kv-v">${f.SOBT || "--:--"}</div>
+                  </div>
+
+                  <div class="kv-box">
+                    <div class="kv-k">AOBT / EOBT</div>
+                    <div class="kv-v">${f.AOBT || f.EOBT || "--:--"}</div>
+                  </div>
+
+                  <div class="kv-box">
+                    <div class="kv-k">CD</div>
+                    <div class="kv-v cd-value ${cd.bulmaClass}">${cd.text}</div>
+                  </div>
+                </div>
+
+                <div class="timeline-wrap">
+                  ${renderSteps(f)}
+                </div>
+              </div>
             </div>
           </div>
         `;
       }).join("");
 
       document.getElementById("lastUpdate").textContent =
-        `Dernière mise à jour : ${new Date().toLocaleTimeString("fr-FR")}`;
+        `Maj : ${new Date().toLocaleTimeString("fr-FR")}`;
     }
 
     socket.onopen = () => {
+      document.getElementById("connState").className = "tag is-success is-medium status-tag";
       document.getElementById("connState").textContent = "Connecté";
     };
 
     socket.onclose = () => {
+      document.getElementById("connState").className = "tag is-danger is-medium status-tag";
       document.getElementById("connState").textContent = "Déconnecté";
     };
 
     socket.onerror = () => {
+      document.getElementById("connState").className = "tag is-danger is-medium status-tag";
       document.getElementById("connState").textContent = "Erreur WebSocket";
     };
 
