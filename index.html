@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Turnaround</title>
+  <style>
+    :root{
+      --bg:#0f1115;
+      --card:#151922;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --border:rgba(255,255,255,.08);
+      --ok:#16a34a;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --info:#2563eb;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .wrap{
+      max-width:1600px;
+      margin:0 auto;
+      padding:16px;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
+    }
+
+    .title{
+      font-size:1.4rem;
+      font-weight:700;
+    }
+
+    .meta{
+      color:var(--muted);
+      font-size:.95rem;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));
+      gap:14px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:14px;
+      box-shadow:0 8px 24px rgba(0,0,0,.25);
+    }
+
+    .card-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .flight{
+      font-size:1.25rem;
+      font-weight:800;
+      line-height:1.2;
+    }
+
+    .route{
+      color:var(--muted);
+      font-size:.95rem;
+      margin-top:4px;
+    }
+
+    .immat{
+      font-size:.9rem;
+      color:var(--muted);
+      text-align:right;
+    }
+
+    .status{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:.82rem;
+      font-weight:700;
+      margin-bottom:12px;
+    }
+
+    .status.info{ background:rgba(37,99,235,.18); color:#93c5fd; }
+    .status.ok{ background:rgba(22,163,74,.18); color:#86efac; }
+    .status.warn{ background:rgba(245,158,11,.18); color:#fcd34d; }
+    .status.danger{ background:rgba(239,68,68,.18); color:#fca5a5; }
+
+    .kv{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:10px;
+      margin-bottom:12px;
+    }
+
+    .box{
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px;
+      min-height:58px;
+    }
+
+    .k{
+      font-size:.72rem;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:6px;
+      font-weight:700;
+      letter-spacing:.04em;
+    }
+
+    .v{
+      font-size:1rem;
+      font-weight:800;
+    }
+
+    .cd{
+      font-size:1.25rem;
+      font-weight:900;
+    }
+
+    .cd.ok{ color:#86efac; }
+    .cd.warn{ color:#fcd34d; }
+    .cd.danger{ color:#fca5a5; }
+
+    .timeline{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .step{
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:.8rem;
+      font-weight:700;
+      border:1px solid var(--border);
+      color:var(--muted);
+      background:rgba(255,255,255,.03);
+    }
+
+    .step.done{
+      color:#fff;
+      background:rgba(37,99,235,.22);
+      border-color:rgba(37,99,235,.35);
+    }
+
+    .empty{
+      color:var(--muted);
+      padding:24px;
+      text-align:center;
+      border:1px dashed var(--border);
+      border-radius:16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div>
+        <div class="title">Dashboard Turnaround</div>
+        <div class="meta" id="connState">Connexion…</div>
+      </div>
+      <div class="meta" id="lastUpdate">--</div>
+    </div>
+
+    <div id="cards" class="grid"></div>
+  </div>
+
+  <script>
+    const socket = new WebSocket("wss://turnaround-sync.deruellehugo-49c.workers.dev/dashboard");
+    const flights = new Map();
+
+    function hasValue(v) {
+      return v !== undefined && v !== null && String(v).trim() !== "";
+    }
+
+    function parseTimeToMinutes(hhmm) {
+      if (!hhmm || !String(hhmm).includes(":")) return null;
+      const [h, m] = hhmm.split(":").map(Number);
+      if (Number.isNaN(h) || Number.isNaN(m)) return null;
+      return h * 60 + m;
+    }
+
+    function computeCD(flight) {
+      const ref = flight.AOBT || flight.EOBT || flight.SOBT || "";
+      const mins = parseTimeToMinutes(ref);
+      if (mins === null) return { text: "--", cls: "" };
+
+      const now = new Date();
+      const nowMins = now.getHours() * 60 + now.getMinutes();
+      let diff = mins - nowMins;
+
+      if (diff > 720) diff -= 1440;
+      if (diff < -720) diff += 1440;
+
+      const sign = diff < 0 ? "-" : "";
+      const abs = Math.abs(diff);
+      const hh = String(Math.floor(abs / 60)).padStart(2, "0");
+      const mm = String(abs % 60).padStart(2, "0");
+
+      let cls = "ok";
+      if (diff <= 15 && diff >= 0) cls = "warn";
+      if (diff < 0) cls = "danger";
+
+      return {
+        text: `${sign}${hh}:${mm}`,
+        cls
+      };
+    }
+
+    function computeStatus(f) {
+      if (hasValue(f.AOBT)) {
+        return { text: "Départ", cls: "ok" };
+      }
+      if (hasValue(f.FermeturePorteAvion)) {
+        return { text: "Porte avion fermée", cls: "info" };
+      }
+      if (hasValue(f.AvionDernierEmbarque)) {
+        return { text: "Embarquement terminé", cls: "ok" };
+      }
+      if (hasValue(f.AvionPremierEmbarque)) {
+        return { text: "Embarquement en cours", cls: "info" };
+      }
+      if (hasValue(f.DernierDebarque)) {
+        return { text: "Débarquement terminé", cls: "ok" };
+      }
+      if (hasValue(f.PremierDebarque)) {
+        return { text: "Débarquement en cours", cls: "info" };
+      }
+      if (hasValue(f.AIBT)) {
+        return { text: "Au bloc", cls: "warn" };
+      }
+      return { text: "En attente", cls: "warn" };
+    }
+
+    function isActiveFlight(f) {
+      const started =
+        hasValue(f.AIBT) ||
+        hasValue(f.PremierDebarque) ||
+        hasValue(f.DernierDebarque) ||
+        hasValue(f.AvionPremierEmbarque) ||
+        hasValue(f.AvionDernierEmbarque) ||
+        hasValue(f.FermeturePorteAvion);
+
+      const notDeparted = !hasValue(f.AOBT);
+
+      return started && notDeparted;
+    }
+
+    function renderSteps(f) {
+      const steps = [
+        ["Au bloc", hasValue(f.AIBT)],
+        ["Débarquement en cours", hasValue(f.PremierDebarque)],
+        ["Débarquement terminé", hasValue(f.DernierDebarque)],
+        ["Embarquement en cours", hasValue(f.AvionPremierEmbarque)],
+        ["Embarquement terminé", hasValue(f.AvionDernierEmbarque)],
+        ["Porte fermée", hasValue(f.FermeturePorteAvion)],
+        ["Départ", hasValue(f.AOBT)]
+      ];
+
+      return steps.map(([label, done]) =>
+        `<span class="step ${done ? "done" : ""}">${label}</span>`
+      ).join("");
+    }
+
+    function render() {
+      const cards = document.getElementById("cards");
+
+      const activeFlights = [...flights.values()]
+        .filter(isActiveFlight)
+        .sort((a, b) => {
+          const ta = parseTimeToMinutes(a.SOBT || a.EOBT || "99:99") ?? 9999;
+          const tb = parseTimeToMinutes(b.SOBT || b.EOBT || "99:99") ?? 9999;
+          return ta - tb;
+        });
+
+      if (!activeFlights.length) {
+        cards.innerHTML = `<div class="empty">Aucun vol en cours de traitement</div>`;
+        return;
+      }
+
+      cards.innerHTML = activeFlights.map(f => {
+        const cd = computeCD(f);
+        const status = computeStatus(f);
+
+        return `
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="flight">${f.NVol || "--"}</div>
+                <div class="route">${f.To || "--"}</div>
+              </div>
+              <div class="immat">${f.Immat || ""}</div>
+            </div>
+
+            <div class="status ${status.cls}">${status.text}</div>
+
+            <div class="kv">
+              <div class="box">
+                <div class="k">SIBT</div>
+                <div class="v">${f.SIBT || "--:--"}</div>
+              </div>
+              <div class="box">
+                <div class="k">AIBT</div>
+                <div class="v">${f.AIBT || "--:--"}</div>
+              </div>
+              <div class="box">
+                <div class="k">SOBT</div>
+                <div class="v">${f.SOBT || "--:--"}</div>
+              </div>
+              <div class="box">
+                <div class="k">AOBT / EOBT</div>
+                <div class="v">${f.AOBT || f.EOBT || "--:--"}</div>
+              </div>
+              <div class="box">
+                <div class="k">CD</div>
+                <div class="cd ${cd.cls}">${cd.text}</div>
+              </div>
+            </div>
+
+            <div class="timeline">
+              ${renderSteps(f)}
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      document.getElementById("lastUpdate").textContent =
+        `Dernière mise à jour : ${new Date().toLocaleTimeString("fr-FR")}`;
+    }
+
+    socket.onopen = () => {
+      document.getElementById("connState").textContent = "Connecté";
+    };
+
+    socket.onclose = () => {
+      document.getElementById("connState").textContent = "Déconnecté";
+    };
+
+    socket.onerror = () => {
+      document.getElementById("connState").textContent = "Erreur WebSocket";
+    };
+
+    socket.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+
+      if (msg.__type === "snapshot") {
+        flights.clear();
+        (msg.flights || []).forEach(f => {
+          flights.set(f.flightKey, f);
+        });
+        render();
+        return;
+      }
+
+      if (msg.__type === "patch") {
+        const current = flights.get(msg.flightKey) || { flightKey: msg.flightKey };
+        flights.set(msg.flightKey, { ...current, ...msg.payload });
+        render();
+        return;
+      }
+
+      if (msg.__type === "remove") {
+        flights.delete(msg.flightKey);
+        render();
+      }
+    };
+  </script>
+</body>
+</html>
