@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard Turnaround</title>
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+
   <style>
     :root{
       --bg:#f6f7fb;
@@ -201,36 +203,198 @@
 
     function parseTimeToMinutes(hhmm) {
       if (!hhmm || !String(hhmm).includes(":")) return null;
-      const [h, m] = hhmm.split(":").map(Number);
+      const [h, m] = String(hhmm).split(":").map(Number);
       if (Number.isNaN(h) || Number.isNaN(m)) return null;
       return h * 60 + m;
     }
 
-    function computeCD(flight) {
-      const ref = flight.AOBT || flight.EOBT || flight.SOBT || "";
-      const mins = parseTimeToMinutes(ref);
-      if (mins === null) return { text: "--", bulmaClass: "has-text-grey" };
+    function parseHHMM(txt) {
+      if (!txt || !String(txt).includes(":")) return null;
+      const [h, m] = String(txt).split(":").map(Number);
+      if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+      return h * 60 + m;
+    }
 
+    function diffSigned(t, ref) {
+      let d = t - ref;
+      if (d > 720) d -= 1440;
+      if (d < -720) d += 1440;
+      return d;
+    }
+
+    function getNowMinutes() {
       const now = new Date();
-      const nowMins = now.getHours() * 60 + now.getMinutes();
-      let diff = mins - nowMins;
+      return {
+        mins: now.getHours() * 60 + now.getMinutes(),
+        secs: now.getSeconds()
+      };
+    }
 
-      if (diff > 720) diff -= 1440;
-      if (diff < -720) diff += 1440;
+    function fmtHHMM(mins) {
+      const v = ((mins % 1440) + 1440) % 1440;
+      const h = Math.floor(v / 60);
+      const m = v % 60;
+      return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    }
 
-      const sign = diff < 0 ? "-" : "";
-      const abs = Math.abs(diff);
-      const hh = String(Math.floor(abs / 60)).padStart(2, "0");
-      const mm = String(abs % 60).padStart(2, "0");
+    function computeTOBTData(f) {
+      const cie = (f.Cie || "").toUpperCase();
+      const from = (f.From || "").toUpperCase().trim();
+      const isBVA = from === "BVA";
+
+      const sibtTxt = f.SIBT || "";
+      const aibtTxt = f.AIBT || "";
+      const sobtTxt = f.SOBT || "";
+      const ctotTxt = f.CTOT || "";
+
+      if (!cie || !sobtTxt || (!sibtTxt && !isBVA)) {
+        return { raw: null, adj: null };
+      }
+
+      const SIBT = parseHHMM(isBVA ? sobtTxt : sibtTxt);
+      const SOBT = parseHHMM(sobtTxt);
+      if (SIBT == null || SOBT == null) {
+        return { raw: null, adj: null };
+      }
+
+      const AIBT = isBVA ? SOBT : (aibtTxt ? parseHHMM(aibtTxt) : SIBT);
+      if (AIBT == null) {
+        return { raw: null, adj: null };
+      }
+
+      const SIBT_ext = SIBT;
+      const AIBT_ext = SIBT_ext + diffSigned(AIBT, SIBT);
+      const SOBT_ext = SIBT_ext + diffSigned(SOBT, SIBT);
+
+      const crewChange = !!(
+        (f.ArrPNT || "").trim() ||
+        (f.ArrPNC || "").trim()
+      );
+
+      const isDelayed = AIBT_ext > SIBT_ext;
+      let TOBT_raw_ext = null;
+
+      if (!isDelayed) {
+        TOBT_raw_ext = SOBT_ext;
+      } else {
+        if (cie === "FR" || cie === "RK") {
+          const turn = crewChange ? 35 : 25;
+          const candidate = AIBT_ext + turn;
+          TOBT_raw_ext = (candidate <= SOBT_ext) ? SOBT_ext : candidate;
+        } else if (cie === "W4" || cie === "W6") {
+          const type = (f.TypeAvion || "").toUpperCase();
+          const turn = (type === "A321" || type === "A21N" || type === "A21NY") ? 35 : 30;
+          const candidate = AIBT_ext + turn;
+          TOBT_raw_ext = (candidate <= SOBT_ext) ? SOBT_ext : candidate;
+        } else {
+          const rot = SOBT_ext - SIBT_ext;
+          TOBT_raw_ext = AIBT_ext + rot;
+        }
+      }
+
+      const raw = ((TOBT_raw_ext % 1440) + 1440) % 1440;
+
+      let TOBT_adj_ext = TOBT_raw_ext;
+
+      if (ctotTxt) {
+        const CTOT = parseHHMM(ctotTxt);
+        if (CTOT != null) {
+          const TOBT_ref = ((TOBT_raw_ext % 1440) + 1440) % 1440;
+          const CTOT_ext = TOBT_raw_ext + diffSigned(CTOT, TOBT_ref);
+
+          if (CTOT_ext > (TOBT_raw_ext + 15)) {
+            TOBT_adj_ext = CTOT_ext - 15;
+          }
+        }
+      }
+
+      const adj = ((TOBT_adj_ext % 1440) + 1440) % 1440;
+
+      return { raw, adj };
+    }
+
+    function computeCD(f) {
+      const sibtTxt = f.SIBT || "";
+      const aibtTxt = f.AIBT || "";
+      const sobtTxt = f.SOBT || "";
+      const aobtTxt = f.AOBT || "";
+
+      const from = (f.From || "").toUpperCase().trim();
+      const isBVA = from === "BVA";
+
+      if (!sobtTxt || (!isBVA && (!aibtTxt || !sibtTxt))) {
+        return { text: "--:--", bulmaClass: "has-text-grey" };
+      }
+
+      const SOBT = parseHHMM(sobtTxt);
+      const SIBT = isBVA ? SOBT : parseHHMM(sibtTxt);
+      const AIBT = isBVA ? SOBT : parseHHMM(aibtTxt);
+
+      if (SOBT == null || SIBT == null || AIBT == null) {
+        return { text: "--:--", bulmaClass: "has-text-grey" };
+      }
+
+      let targetMin = null;
+
+      if (AIBT <= SIBT) {
+        targetMin = SOBT;
+      } else {
+        const tobt = computeTOBTData(f).raw;
+        if (tobt == null) {
+          return { text: "--:--", bulmaClass: "has-text-grey" };
+        }
+        targetMin = tobt;
+      }
+
+      if (aobtTxt) {
+        const AOBT = parseHHMM(aobtTxt);
+        if (AOBT == null) {
+          return { text: "--:--", bulmaClass: "has-text-grey" };
+        }
+
+        let diffMin = AOBT - targetMin;
+        if (diffMin > 720) diffMin -= 1440;
+        if (diffMin < -720) diffMin += 1440;
+
+        const totalSeconds = diffMin * 60;
+        const sign = totalSeconds >= 0 ? "+" : "-";
+        const abs = Math.abs(totalSeconds);
+        const mm = Math.floor(abs / 60);
+        const ss = abs % 60;
+
+        return {
+          text: `${sign}${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`,
+          bulmaClass: totalSeconds > 0 ? "has-text-danger" : "has-text-success"
+        };
+      }
+
+      const now = getNowMinutes();
+
+      let diffMin = targetMin - now.mins;
+      if (diffMin < -720) diffMin += 1440;
+      if (diffMin > 720) diffMin -= 1440;
+
+      const remainingSeconds = diffMin * 60 - now.secs;
+      const sign = remainingSeconds <= 0 ? "+" : "";
+      const abs = Math.abs(remainingSeconds);
+      const mm = Math.floor(abs / 60);
+      const ss = abs % 60;
 
       let bulmaClass = "has-text-success";
-      if (diff <= 15 && diff >= 0) bulmaClass = "has-text-warning";
-      if (diff < 0) bulmaClass = "has-text-danger";
+      if (remainingSeconds < 0) bulmaClass = "has-text-danger";
+      else if (remainingSeconds <= 15 * 60) bulmaClass = "has-text-warning";
 
       return {
-        text: `${sign}${hh}:${mm}`,
+        text: `${sign}${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`,
         bulmaClass
       };
+    }
+
+    function getDisplayedOutTime(f) {
+      if (hasValue(f.AOBT)) return f.AOBT;
+      const tobt = computeTOBTData(f).adj;
+      if (tobt == null) return "--:--";
+      return fmtHHMM(tobt);
     }
 
     function computeStatus(f) {
@@ -294,8 +458,8 @@
       const activeFlights = [...flights.values()]
         .filter(isActiveFlight)
         .sort((a, b) => {
-          const ta = parseTimeToMinutes(a.SOBT || a.EOBT || "99:99") ?? 9999;
-          const tb = parseTimeToMinutes(b.SOBT || b.EOBT || "99:99") ?? 9999;
+          const ta = parseTimeToMinutes(a.SOBT || "99:99") ?? 9999;
+          const tb = parseTimeToMinutes(b.SOBT || "99:99") ?? 9999;
           return ta - tb;
         });
 
@@ -312,6 +476,7 @@
 
       cards.innerHTML = activeFlights.map(f => {
         const cd = computeCD(f);
+        const displayedOut = getDisplayedOutTime(f);
         const status = computeStatus(f);
 
         return `
@@ -349,8 +514,8 @@
                   </div>
 
                   <div class="kv-box">
-                    <div class="kv-k">AOBT / EOBT</div>
-                    <div class="kv-v">${f.AOBT || f.EOBT || "--:--"}</div>
+                    <div class="kv-k">AOBT / TOBT</div>
+                    <div class="kv-v">${displayedOut}</div>
                   </div>
 
                   <div class="kv-box">
@@ -411,6 +576,10 @@
         render();
       }
     };
+
+    setInterval(() => {
+      render();
+    }, 1000);
   </script>
 </body>
 </html>
