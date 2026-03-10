@@ -93,29 +93,6 @@
       font-weight: 900;
     }
 
-    .timeline-wrap{
-      display:flex;
-      flex-wrap:wrap;
-      gap:.45rem;
-      margin-top:.35rem;
-    }
-
-    .timeline-chip{
-      border-radius: 999px;
-      padding: .4rem .7rem;
-      font-size: .78rem;
-      font-weight: 800;
-      border: 1px solid var(--border);
-      background: #fff;
-      color: var(--muted);
-    }
-
-    .timeline-chip.is-done{
-      background: #e8f0ff;
-      color: #0f3d91;
-      border-color: #bcd0ff;
-    }
-
     .topbar{
       display:flex;
       align-items:center;
@@ -405,19 +382,19 @@
         return { text: "Porte avion fermée", tagClass: "is-link" };
       }
       if (hasValue(f.AvionDernierEmbarque)) {
-        return { text: "Embarquement terminé", tagClass: "is-success" };
+        return { text: "Embarquement terminé", tagClass: "is-link" };
       }
       if (hasValue(f.AvionPremierEmbarque)) {
         return { text: "Embarquement en cours", tagClass: "is-link" };
       }
       if (hasValue(f.DernierDebarque)) {
-        return { text: "Débarquement terminé", tagClass: "is-success" };
+        return { text: "Débarquement terminé", tagClass: "is-link" };
       }
       if (hasValue(f.PremierDebarque)) {
         return { text: "Débarquement en cours", tagClass: "is-link" };
       }
       if (hasValue(f.AIBT)) {
-        return { text: "Au bloc", tagClass: "is-warning" };
+        return { text: "Au bloc", tagClass: "is-link" };
       }
       return { text: "En attente", tagClass: "is-light" };
     }
@@ -434,22 +411,6 @@
       const notDeparted = !hasValue(f.AOBT);
 
       return started && notDeparted;
-    }
-
-    function renderSteps(f) {
-      const steps = [
-        ["Au bloc", hasValue(f.AIBT)],
-        ["Débarquement en cours", hasValue(f.PremierDebarque)],
-        ["Débarquement terminé", hasValue(f.DernierDebarque)],
-        ["Embarquement en cours", hasValue(f.AvionPremierEmbarque)],
-        ["Embarquement terminé", hasValue(f.AvionDernierEmbarque)],
-        ["Porte avion fermée", hasValue(f.FermeturePorteAvion)],
-        ["Départ", hasValue(f.AOBT)]
-      ];
-
-      return steps.map(([label, done]) => {
-        return `<span class="timeline-chip ${done ? "is-done" : ""}">${label}</span>`;
-      }).join("");
     }
 
     function render() {
@@ -523,10 +484,6 @@
                     <div class="kv-v cd-value ${cd.bulmaClass}">${cd.text}</div>
                   </div>
                 </div>
-
-                <div class="timeline-wrap">
-                  ${renderSteps(f)}
-                </div>
               </div>
             </div>
           </div>
@@ -538,18 +495,21 @@
     }
 
     socket.onopen = () => {
-      document.getElementById("connState").className = "tag is-success is-medium status-tag";
-      document.getElementById("connState").textContent = "Connecté";
+      const el = document.getElementById("connState");
+      el.className = "tag is-success status-tag";
+      el.textContent = "Connecté";
     };
 
     socket.onclose = () => {
-      document.getElementById("connState").className = "tag is-danger is-medium status-tag";
-      document.getElementById("connState").textContent = "Déconnecté";
+      const el = document.getElementById("connState");
+      el.className = "tag is-danger status-tag";
+      el.textContent = "Déconnecté";
     };
 
     socket.onerror = () => {
-      document.getElementById("connState").className = "tag is-danger is-medium status-tag";
-      document.getElementById("connState").textContent = "Erreur WebSocket";
+      const el = document.getElementById("connState");
+      el.className = "tag is-danger status-tag";
+      el.textContent = "Erreur";
     };
 
     socket.onmessage = (event) => {
