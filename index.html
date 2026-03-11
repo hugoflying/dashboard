@@ -173,27 +173,36 @@ let socket=null
 let reconnectTimer=null
 const flights=new Map()
 
-function connect(){
+function connect() {
 
-socket=new WebSocket(WS_URL)
+  socket = new WebSocket(WS_URL);
 
-socket.onopen=()=>{
-clearTimeout(reconnectTimer)
-setConn("is-success","Connecté")
-}
+  socket.onopen = () => {
+    clearTimeout(reconnectTimer);
+    setConn("is-success", "Connecté");
+    console.log("DASHBOARD WS CONNECTED");
+  };
 
-socket.onclose=()=>{
-setConn("is-danger","Déconnecté")
-scheduleReconnect()
-}
+  socket.onclose = () => {
+    setConn("is-danger", "Déconnecté");
+    console.log("DASHBOARD WS CLOSED");
+    scheduleReconnect();
+  };
 
-socket.onerror=()=>{
-setConn("is-danger","Erreur")
-}
+  socket.onerror = (err) => {
+    setConn("is-danger", "Erreur");
+    console.error("DASHBOARD WS ERROR", err);
+  };
 
-socket.onmessage=(event)=>{
-handleMessage(JSON.parse(event.data))
-}
+  socket.onmessage = (event) => {
+    try {
+      const msg = JSON.parse(event.data);
+      console.log("DASHBOARD WS RECEIVED", msg);
+      handleMessage(msg);
+    } catch (e) {
+      console.error("DASHBOARD WS PARSE ERROR", event.data);
+    }
+  };
 
 }
 
@@ -266,94 +275,107 @@ return{text:"Au bloc",tagClass:"is-link"}
 return{text:"En attente",tagClass:"is-light"}
 }
 
-function render(){
+function render() {
+  const cards = document.getElementById("cards");
 
-const cards=document.getElementById("cards")
+  const active = [...flights.values()]
+    .filter(isActiveFlight)
+    .sort((a, b) => {
+      const ta = parseHHMM(a.SOBT) || 9999;
+      const tb = parseHHMM(b.SOBT) || 9999;
+      return ta - tb;
+    });
 
-const active=[...flights.values()]
-.filter(isActiveFlight)
-.sort((a,b)=>{
+  if (!active.length) {
+    cards.innerHTML = `
+      <div class="column is-12">
+        <div class="empty-box">
+          Aucun vol en cours de traitement
+        </div>
+      </div>
+    `;
+    return;
+  }
 
-const ta=parseHHMM(a.SOBT)||9999
-const tb=parseHHMM(b.SOBT)||9999
+  cards.innerHTML = active.map(f => {
+    console.log("RENDER FLIGHT =", f);
 
-return ta-tb
-})
+    const status = computeStatus(f);
+    const flightNumber = `${f.Cie || ""}${f.NVol || ""}`.trim() || "--";
+    const countdown = computeCountdown(f);
 
-if(!active.length){
+    return `
+      <div class="column is-4-desktop is-6-tablet is-12-mobile">
+        <div class="card dashboard-card">
+          <div class="card-content">
 
-cards.innerHTML=`
-<div class="column is-12">
-<div class="empty-box">
-Aucun vol en cours de traitement
-</div>
-</div>
-`
-return
+            <div class="header-line">
+              <div>
+                <div class="flight-title">${flightNumber}</div>
+                <div class="flight-subtitle">${f.To || "--"}</div>
+              </div>
+            </div>
+
+            <div class="mt-3 mb-3">
+              <span class="tag ${status.tagClass} is-medium status-tag">
+                ${status.text}
+              </span>
+            </div>
+
+            <div class="kv-grid">
+
+              <div class="kv-box">
+                <div class="kv-k">SOBT</div>
+                <div class="kv-v">${f.SOBT || "--:--"}</div>
+              </div>
+
+              <div class="kv-box">
+                <div class="kv-k">EOBT</div>
+                <div class="kv-v">${f.EOBT || "--:--"}</div>
+              </div>
+
+              <div class="kv-box">
+                <div class="kv-k">CD</div>
+                <div class="kv-v">${countdown || "--:--"}</div>
+              </div>
+
+              <div class="kv-box">
+                <div class="kv-k">AOBT</div>
+                <div class="kv-v">${f.AOBT || "--:--"}</div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  document.getElementById("lastUpdate").textContent =
+    "Maj : " + new Date().toLocaleTimeString("fr-FR");
 }
 
-cards.innerHTML=active.map(f=>{
+function computeCountdown(f) {
+  const ref = f.EOBT || f.SOBT;
+  if (!ref || !String(ref).includes(":")) return "";
 
-const status=computeStatus(f)
+  const [hh, mm] = String(ref).split(":").map(Number);
+  if (Number.isNaN(hh) || Number.isNaN(mm)) return "";
 
-return`
-<div class="column is-4-desktop is-6-tablet is-12-mobile">
-<div class="card dashboard-card">
+  const now = new Date();
+  const target = new Date();
+  target.setHours(hh, mm, 0, 0);
 
-<div class="card-content">
+  const diffMs = target.getTime() - now.getTime();
+  const totalMin = Math.round(diffMs / 60000);
 
-<div class="header-line">
+  const sign = totalMin < 0 ? "-" : "";
+  const abs = Math.abs(totalMin);
+  const h = Math.floor(abs / 60);
+  const m = abs % 60;
 
-<div>
-<div class="flight-title">${f.NVol||"--"}</div>
-<div class="flight-subtitle">${f.To||"--"}</div>
-</div>
-
-<div class="small-meta">
-<div>${f.Immat||""}</div>
-</div>
-
-</div>
-
-<div class="mt-3 mb-3">
-<span class="tag ${status.tagClass} is-medium status-tag">
-${status.text}
-</span>
-</div>
-
-<div class="kv-grid">
-
-<div class="kv-box">
-<div class="kv-k">SIBT</div>
-<div class="kv-v">${f.SIBT||"--:--"}</div>
-</div>
-
-<div class="kv-box">
-<div class="kv-k">AIBT</div>
-<div class="kv-v">${f.AIBT||"--:--"}</div>
-</div>
-
-<div class="kv-box">
-<div class="kv-k">SOBT</div>
-<div class="kv-v">${f.SOBT||"--:--"}</div>
-</div>
-
-<div class="kv-box">
-<div class="kv-k">AOBT</div>
-<div class="kv-v">${f.AOBT||"--:--"}</div>
-</div>
-
-</div>
-
-</div>
-</div>
-</div>
-`
-
-}).join("")
-
-document.getElementById("lastUpdate").textContent=
-"Maj : "+new Date().toLocaleTimeString("fr-FR")
+  return `${sign}${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
 function handleMessage(msg){
