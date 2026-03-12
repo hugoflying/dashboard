@@ -179,16 +179,9 @@ let socket=null
 let reconnectTimer=null
 const flights=new Map()
 
-// deletedKeys persisté en localStorage pour survivre au F5
-const DELETED_KEY = "dashboard_deleted_flights"
-function loadDeletedKeys(){
-  try{ return new Set(JSON.parse(localStorage.getItem(DELETED_KEY)||"[]")); }
-  catch(_){ return new Set(); }
-}
-function saveDeletedKeys(set){
-  try{ localStorage.setItem(DELETED_KEY, JSON.stringify([...set])); }catch(_){}
-}
-const deletedKeys = loadDeletedKeys()
+const deletedKeys = new Set()
+// Nettoyer l'ancien localStorage si présent
+try{ localStorage.removeItem("dashboard_deleted_flights"); }catch(_){}
 
 function connect() {
 
@@ -458,7 +451,6 @@ async function deleteFlight(flightKey){
   if(!flightKey) return;
   // Suppression locale immédiate + blacklist pour éviter le retour au snapshot
   deletedKeys.add(flightKey);
-  saveDeletedKeys(deletedKeys);
   flights.delete(flightKey);
   render();
   // Notification au serveur
