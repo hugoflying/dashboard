@@ -310,6 +310,9 @@ function render() {
     const flightNumber = `${f.Cie || ""}${f.NVol || ""}`.trim() || "--";
     const countdown = computeCountdown(f);
 
+    const arrVol  = f.Cie && f.NVol ? (f.Cie + f.NVol) : "";
+    const route   = [f.From, f.To].filter(Boolean).join(" → ") || "--";
+
     return `
       <div class="column is-4-desktop is-6-tablet is-12-mobile">
         <div class="card dashboard-card">
@@ -317,8 +320,8 @@ function render() {
 
             <div class="header-line">
               <div>
-                <div class="flight-title">${flightNumber}</div>
-                <div class="flight-subtitle">${f.To || "--"}</div>
+                <div class="flight-title">${arrVol || "--"}</div>
+                <div class="flight-subtitle">${route}${f.Immat ? " · " + f.Immat : ""}${f.TypeAvion ? " · " + f.TypeAvion : ""}</div>
               </div>
               <button class="close-btn" onclick="deleteFlight('${f.flightKey}')" title="Fermer">✕</button>
             </div>
@@ -330,6 +333,16 @@ function render() {
             </div>
 
             <div class="kv-grid">
+
+              <div class="kv-box">
+                <div class="kv-k">SIBT</div>
+                <div class="kv-v">${f.SIBT || "--:--"}</div>
+              </div>
+
+              <div class="kv-box">
+                <div class="kv-k">AIBT</div>
+                <div class="kv-v">${f.AIBT || "--:--"}</div>
+              </div>
 
               <div class="kv-box">
                 <div class="kv-k">SOBT</div>
