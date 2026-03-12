@@ -176,7 +176,8 @@ html.dark .tag.is-light{
 }
 
 html.dark #utcToggle,
-html.dark #darkToggle{
+html.dark #darkToggle,
+html.dark #langToggle{
   background: rgba(255,255,255,.08) !important;
   color: var(--text) !important;
   border-color: rgba(255,255,255,.12) !important;
@@ -203,6 +204,7 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
 <button id="darkToggle" onclick="toggleDark()" class="button is-small is-light" style="font-size:1.1rem;padding:0 10px;height:32px;">🌙</button>
 <button id="utcToggle" onclick="toggleUTC()" class="button is-small is-light" style="font-weight:800;height:32px;">LOCAL</button>
+<button id="langToggle" onclick="toggleLang()" class="button is-small is-light" style="font-weight:800;height:32px;">FR</button>
 <div class="tags are-medium mb-0">
 <span id="connState" class="tag is-warning status-tag" onclick="toggleConnection()" style="cursor:pointer;" title="Cliquer pour déconnecter">Connexion…</span>
 <span id="lastUpdate" class="tag is-light status-tag">--</span>
@@ -222,6 +224,7 @@ const WS_URL="wss://turnaround-sync.deruellehugo-49c.workers.dev/dashboard"
 let socket=null
 let reconnectTimer=null
 let isUTC = localStorage.getItem('dashboard_utc') === '1'
+let lang  = localStorage.getItem('dashboard_lang') || 'FR'
 const flights=new Map()
 
 const deletedKeys = new Set()
@@ -292,43 +295,65 @@ return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`
 }
 
 function isActiveFlight(f){
+  const started =
+    hasValue(f.AIBT)||
+    hasValue(f.PremierDebarque)||
+    hasValue(f.DernierDebarque)||
+    hasValue(f.AvionPremierEmbarque)||
+    hasValue(f.AvionDernierEmbarque)||
+    hasValue(f.FermeturePorteAvion)
 
-const started=
-hasValue(f.AIBT)||
-hasValue(f.PremierDebarque)||
-hasValue(f.DernierDebarque)||
-hasValue(f.AvionPremierEmbarque)||
-hasValue(f.AvionDernierEmbarque)||
-hasValue(f.FermeturePorteAvion)
+  if(!started) return false
 
-const notDeparted=!hasValue(f.AOBT)
+  // Si AOBT rentré, disparaît 20min après
+  if(hasValue(f.AOBT)){
+    const aobtMins = parseHHMM(f.AOBT)
+    if(aobtMins != null){
+      const now = new Date()
+      const nowMins = now.getHours()*60 + now.getMinutes()
+      let diff = nowMins - aobtMins
+      if(diff < -720) diff += 1440
+      if(diff > 720)  diff -= 1440
+      return diff < 20
+    }
+  }
 
-return started && notDeparted
+  return true
+}
+
+const STATUS = {
+  FR: {
+    aobt:    "AU REPOUSSAGE",
+    door:    "PORTE AVION FERMÉE",
+    lastEmb: "EMBARQUEMENT TERMINÉ",
+    firstEmb:"EMBARQUEMENT EN COURS",
+    lastDeb: "DÉBARQUEMENT TERMINÉ",
+    firstDeb:"DÉBARQUEMENT EN COURS",
+    aibt:    "AU BLOC",
+    waiting: "EN ATTENTE",
+  },
+  EN: {
+    aobt:    "OFF BLOCK",
+    door:    "A/C DOOR CLOSED",
+    lastEmb: "BOARDING COMPLETED",
+    firstEmb:"BOARDING IN PROGRESS",
+    lastDeb: "DISEMBARKING COMPLETED",
+    firstDeb:"DISEMBARKING IN PROGRESS",
+    aibt:    "IN BLOCK",
+    waiting: "WAITING",
+  }
 }
 
 function computeStatus(f){
-
-if(hasValue(f.AOBT))return{text:"Départ",tagClass:"is-success"}
-
-if(hasValue(f.FermeturePorteAvion))
-return{text:"Porte avion fermée",tagClass:"is-link"}
-
-if(hasValue(f.AvionDernierEmbarque))
-return{text:"Embarquement terminé",tagClass:"is-link"}
-
-if(hasValue(f.AvionPremierEmbarque))
-return{text:"Embarquement en cours",tagClass:"is-link"}
-
-if(hasValue(f.DernierDebarque))
-return{text:"Débarquement terminé",tagClass:"is-link"}
-
-if(hasValue(f.PremierDebarque))
-return{text:"Débarquement en cours",tagClass:"is-link"}
-
-if(hasValue(f.AIBT))
-return{text:"Au bloc",tagClass:"is-link"}
-
-return{text:"En attente",tagClass:"is-light"}
+  const s = STATUS[lang] || STATUS.FR
+  if(hasValue(f.AOBT))               return{text:s.aobt,    tagClass:"is-success"}
+  if(hasValue(f.FermeturePorteAvion))return{text:s.door,    tagClass:"is-link"}
+  if(hasValue(f.AvionDernierEmbarque))return{text:s.lastEmb, tagClass:"is-link"}
+  if(hasValue(f.AvionPremierEmbarque))return{text:s.firstEmb,tagClass:"is-link"}
+  if(hasValue(f.DernierDebarque))    return{text:s.lastDeb, tagClass:"is-link"}
+  if(hasValue(f.PremierDebarque))    return{text:s.firstDeb,tagClass:"is-link"}
+  if(hasValue(f.AIBT))               return{text:s.aibt,    tagClass:"is-link"}
+  return{text:s.waiting,tagClass:"is-light"}
 }
 
 function render() {
@@ -670,6 +695,19 @@ function convertTime(hhmmStr){
   }
   return hhmmStr; // déjà local
 }
+function toggleLang(){
+  lang = lang === 'FR' ? 'EN' : 'FR'
+  localStorage.setItem('dashboard_lang', lang)
+  document.getElementById('langToggle').textContent = lang
+  render()
+}
+
+// Restore lang preference
+if(localStorage.getItem('dashboard_lang')){
+  lang = localStorage.getItem('dashboard_lang')
+  document.getElementById('langToggle').textContent = lang
+}
+
 function toggleUTC(){
   isUTC = !isUTC
   localStorage.setItem('dashboard_utc', isUTC ? '1' : '0')
