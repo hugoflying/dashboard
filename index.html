@@ -555,8 +555,9 @@ function computeCountdown(f){
 
   // Live : décompte jusqu'à 0 puis +
   const now = new Date();
-  const nowMins = isUTC ? (now.getUTCHours()*60 + now.getUTCMinutes()) : (now.getHours()*60 + now.getMinutes());
-  const nowSecs = isUTC ? now.getUTCSeconds() : now.getSeconds();
+  // Toujours en local : les heures du vol sont saisies en local
+  const nowMins = now.getHours()*60 + now.getMinutes();
+  const nowSecs = now.getSeconds();
   let diffMin = targetMin - nowMins;
   if(diffMin<-720) diffMin+=1440;
   if(diffMin>720)  diffMin-=1440;
