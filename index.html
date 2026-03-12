@@ -178,6 +178,7 @@ const WS_URL="wss://turnaround-sync.deruellehugo-49c.workers.dev/dashboard"
 let socket=null
 let reconnectTimer=null
 const flights=new Map()
+const deletedKeys=new Set()
 
 function connect() {
 
@@ -405,7 +406,7 @@ if(msg.__type==="snapshot"){
 flights.clear()
 
 ;(msg.flights||[]).forEach(f=>{
-if(f.flightKey)flights.set(f.flightKey,f)
+if(f.flightKey && !deletedKeys.has(f.flightKey))flights.set(f.flightKey,f)
 })
 
 render()
@@ -415,6 +416,7 @@ return
 if(msg.__type==="patch"){
 
 if(!msg.flightKey)return
+if(deletedKeys.has(msg.flightKey))return
 
 const current=flights.get(msg.flightKey)||{flightKey:msg.flightKey}
 
@@ -443,14 +445,15 @@ connect()
 
 async function deleteFlight(flightKey){
   if(!flightKey) return;
-  // Suppression locale immédiate
+  // Suppression locale immédiate + blacklist pour éviter le retour au snapshot
+  deletedKeys.add(flightKey);
   flights.delete(flightKey);
   render();
-  // Notification au serveur (best-effort)
+  // Notification au serveur
   try{
     const res = await fetch(
       `https://turnaround-sync.deruellehugo-49c.workers.dev/${encodeURIComponent(flightKey)}`,
-      { method: "DELETE", credentials: "include" }
+      { method: "DELETE" }
     );
     console.log("DELETE", flightKey, res.status);
   }catch(e){ console.error("Delete error", e); }
