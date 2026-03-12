@@ -377,8 +377,6 @@ function render() {
     `;
   }).join("");
 
-  document.getElementById("lastUpdate").textContent =
-    "Maj : " + new Date().toLocaleTimeString("fr-FR");
 }
 
 function computeCountdown(f) {
@@ -442,7 +440,13 @@ render()
 
 }
 
-setInterval(render,1000)
+setInterval(()=>{
+  render()
+  if(!manuallyDisconnected && socket && socket.readyState === WebSocket.OPEN){
+    document.getElementById("lastUpdate").textContent =
+      "Maj : " + new Date().toLocaleTimeString("fr-FR")
+  }
+},1000)
 
 connect()
 
