@@ -311,6 +311,8 @@ return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`
 function isActiveFlight(f){
   const started =
     hasValue(f.AIBT)||
+    hasValue(f.ArrPNT)||
+    hasValue(f.ArrPNC)||
     hasValue(f.PremierDebarque)||
     hasValue(f.DernierDebarque)||
     hasValue(f.AvionPremierEmbarque)||
@@ -344,6 +346,7 @@ const STATUS = {
     lastDeb: "DÉBARQUEMENT TERMINÉ",
     firstDeb:"DÉBARQUEMENT EN COURS",
     aibt:    "AU BLOC",
+    crew:    "ÉQUIPAGE À BORD",
     waiting: "EN ATTENTE",
   },
   EN: {
@@ -354,6 +357,7 @@ const STATUS = {
     lastDeb: "DISEMBARKING COMPLETED",
     firstDeb:"DISEMBARKING IN PROGRESS",
     aibt:    "IN BLOCK",
+    crew:    "CREW ON BOARD",
     waiting: "WAITING",
   }
 }
@@ -367,6 +371,7 @@ function computeStatus(f){
   if(hasValue(f.DernierDebarque))    return{text:s.lastDeb, tagClass:"is-link"}
   if(hasValue(f.PremierDebarque))    return{text:s.firstDeb,tagClass:"is-link"}
   if(hasValue(f.AIBT))               return{text:s.aibt,    tagClass:"is-link"}
+  if(hasValue(f.ArrPNT)||hasValue(f.ArrPNC)) return{text:s.crew, tagClass:"is-link"}
   return{text:s.waiting,tagClass:"is-light"}
 }
 
