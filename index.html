@@ -430,11 +430,17 @@ connect()
 
 async function deleteFlight(flightKey){
   if(!flightKey) return;
+  // Suppression locale immédiate
+  flights.delete(flightKey);
+  render();
+  // Notification au serveur (best-effort)
   try{
-    await fetch(`https://turnaround-sync.deruellehugo-49c.workers.dev/${encodeURIComponent(flightKey)}`,{method:"DELETE"});
-    flights.delete(flightKey);
-    render();
-  }catch(e){ console.error("Delete error",e); }
+    const res = await fetch(
+      `https://turnaround-sync.deruellehugo-49c.workers.dev/${encodeURIComponent(flightKey)}`,
+      { method: "DELETE", credentials: "include" }
+    );
+    console.log("DELETE", flightKey, res.status);
+  }catch(e){ console.error("Delete error", e); }
 }
 </script>
 
