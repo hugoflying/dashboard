@@ -112,6 +112,14 @@ justify-content:space-between;
 gap:1rem;
 flex-wrap:wrap;
 margin-bottom:1rem;
+position:relative;
+}
+.topbar-title{
+position:absolute;
+left:50%;
+transform:translateX(-50%);
+text-align:center;
+pointer-events:none;
 }
 
 .topbar h1{
@@ -196,20 +204,26 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
 <div class="page-wrap">
 
 <div class="topbar">
-<div>
-<h1>Dashboard Turnaround</h1>
-<p class="muted mb-0">Vols en cours de traitement</p>
-</div>
 
-<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-<button id="darkToggle" onclick="toggleDark()" class="button is-small is-light" style="font-size:1.1rem;padding:0 10px;height:32px;">🌙</button>
-<button id="utcToggle" onclick="toggleUTC()" class="button is-small is-light" style="font-weight:800;height:32px;">LOCAL</button>
-<button id="langToggle" onclick="toggleLang()" class="button is-small is-light" style="font-weight:800;height:32px;">FR</button>
-<div class="tags are-medium mb-0">
-<span id="connState" class="tag is-warning status-tag" onclick="toggleConnection()" style="cursor:pointer;" title="Cliquer pour déconnecter">Connexion…</span>
-<span id="lastUpdate" class="tag is-light status-tag">--</span>
-</div>
-</div>
+  <!-- Gauche : toggles -->
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+    <button id="darkToggle" onclick="toggleDark()" class="button is-small is-light" style="font-size:1.1rem;padding:0 10px;height:32px;">🌙</button>
+    <button id="utcToggle" onclick="toggleUTC()" class="button is-small is-light" style="font-weight:800;height:32px;">LOCAL</button>
+    <button id="langToggle" onclick="toggleLang()" class="button is-small is-light" style="font-weight:800;height:32px;">FR</button>
+  </div>
+
+  <!-- Centre : titre absolu -->
+  <div class="topbar-title">
+    <h1>DASHBOARD</h1>
+    <p class="muted mb-0" id="pageSubtitle">Vols en cours de traitement</p>
+  </div>
+
+  <!-- Droite : connexion + heure -->
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+    <span id="connState" class="tag is-warning status-tag" onclick="toggleConnection()" style="cursor:pointer;" title="Cliquer pour déconnecter">Connexion…</span>
+    <span id="lastUpdate" class="tag is-light status-tag">--</span>
+  </div>
+
 </div>
 
 <div id="cards" class="columns is-multiline"></div>
@@ -237,18 +251,18 @@ function connect() {
 
   socket.onopen = () => {
     clearTimeout(reconnectTimer);
-    setConn("is-success", "Connecté");
+    setConn("is-success", lang==="EN" ? "Connected" : "Connecté");
     console.log("DASHBOARD WS CONNECTED");
   };
 
   socket.onclose = () => {
-    setConn("is-danger", "Déconnecté");
+    setConn("is-danger",  lang==="EN" ? "Disconnected" : "Déconnecté");
     console.log("DASHBOARD WS CLOSED");
     scheduleReconnect();
   };
 
   socket.onerror = (err) => {
-    setConn("is-danger", "Erreur");
+    setConn("is-danger",  lang==="EN" ? "Error" : "Erreur");
     console.error("DASHBOARD WS ERROR", err);
   };
 
@@ -370,8 +384,8 @@ function render() {
   if (!active.length) {
     cards.innerHTML = `
       <div class="column is-12">
-        <div class="empty-box">
-          Aucun vol en cours de traitement
+        <div class="empty-box" id="emptyBox">
+          ${lang === "EN" ? "No flight in progress" : "Aucun vol en cours de traitement"}
         </div>
       </div>
     `;
@@ -673,7 +687,7 @@ function toggleConnection(){
     manuallyDisconnected = true
     clearTimeout(reconnectTimer)
     if(socket){ try{ socket.close() }catch(_){} socket = null }
-    setConn("is-danger", "Déconnecté")
+    setConn("is-danger",  lang==="EN" ? "Disconnected" : "Déconnecté")
   }
 }
 
@@ -699,13 +713,31 @@ function toggleLang(){
   lang = lang === 'FR' ? 'EN' : 'FR'
   localStorage.setItem('dashboard_lang', lang)
   document.getElementById('langToggle').textContent = lang
+  updateLangUI()
   render()
+}
+
+function currentConnText(cls){
+  if(cls==="is-success") return lang==="EN" ? "Connected" : "Connecté"
+  if(cls==="is-danger")  return lang==="EN" ? "Disconnected" : "Déconnecté"
+  return lang==="EN" ? "Connecting…" : "Connexion…"
+}
+
+function updateLangUI(){
+  const el = document.getElementById("connState")
+  if(el){
+    const cls = [...el.classList].find(c=>c.startsWith("is-"))
+    el.textContent = currentConnText(cls)
+  }
+  const sub = document.getElementById('pageSubtitle')
+  if(sub) sub.textContent = lang === 'EN' ? 'Flights in progress' : 'Vols en cours de traitement'
 }
 
 // Restore lang preference
 if(localStorage.getItem('dashboard_lang')){
   lang = localStorage.getItem('dashboard_lang')
   document.getElementById('langToggle').textContent = lang
+  document.addEventListener('DOMContentLoaded', updateLangUI)
 }
 
 function toggleUTC(){
