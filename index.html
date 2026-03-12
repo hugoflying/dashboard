@@ -177,6 +177,7 @@ font-weight:700;
 
 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
 <button id="darkToggle" onclick="toggleDark()" class="button is-small is-light" style="font-size:1.1rem;padding:0 10px;height:32px;">🌙</button>
+<button id="utcToggle" onclick="toggleUTC()" class="button is-small is-light" style="font-weight:800;height:32px;">LCL</button>
 <div class="tags are-medium mb-0">
 <span id="connState" class="tag is-warning status-tag" onclick="toggleConnection()" style="cursor:pointer;" title="Cliquer pour déconnecter">Connexion…</span>
 <span id="lastUpdate" class="tag is-light status-tag">--</span>
@@ -195,6 +196,7 @@ const WS_URL="wss://turnaround-sync.deruellehugo-49c.workers.dev/dashboard"
 
 let socket=null
 let reconnectTimer=null
+let isUTC = localStorage.getItem('dashboard_utc') === '1'
 const flights=new Map()
 
 const deletedKeys = new Set()
@@ -528,8 +530,8 @@ function computeCountdown(f){
 
   // Live : décompte jusqu'à 0 puis +
   const now = new Date();
-  const nowMins = now.getHours()*60 + now.getMinutes();
-  const nowSecs = now.getSeconds();
+  const nowMins = isUTC ? (now.getUTCHours()*60 + now.getUTCMinutes()) : (now.getHours()*60 + now.getMinutes());
+  const nowSecs = isUTC ? now.getUTCSeconds() : now.getSeconds();
   let diffMin = targetMin - nowMins;
   if(diffMin<-720) diffMin+=1440;
   if(diffMin>720)  diffMin-=1440;
@@ -622,6 +624,18 @@ function toggleConnection(){
     if(socket){ try{ socket.close() }catch(_){} socket = null }
     setConn("is-danger", "Déconnecté")
   }
+}
+
+function toggleUTC(){
+  isUTC = !isUTC
+  localStorage.setItem('dashboard_utc', isUTC ? '1' : '0')
+  document.getElementById('utcToggle').textContent = isUTC ? 'UTC' : 'LCL'
+}
+
+// Restore UTC preference
+if(localStorage.getItem('dashboard_utc') === '1'){
+  isUTC = true
+  document.getElementById('utcToggle').textContent = 'UTC'
 }
 
 function toggleDark(){
