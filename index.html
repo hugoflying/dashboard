@@ -355,7 +355,7 @@ function render() {
     const flightNumber = `${f.Cie || ""}${f.NVol || ""}`.trim() || "--";
     const cd = computeCountdown(f);
     const eobtMins = computeEOBT(f);
-    const eobtStr = eobtMins != null ? fmtHHMM(eobtMins) : (f.EOBT || "--:--");
+    const eobtStr = eobtMins != null ? convertTime(fmtHHMM(eobtMins)) : convertTime(f.EOBT || "--:--");
 
     const arrVol  = (f.Cie||"") + (f.NVol||"") || "--";
     const from    = (f.From||"").toUpperCase();
@@ -395,7 +395,7 @@ function render() {
 
               <div class="kv-box">
                 <div class="kv-k">SIBT</div>
-                <div class="kv-v">${f.SIBT || "--:--"}</div>
+                <div class="kv-v">${convertTime(f.SIBT) || "--:--"}</div>
               </div>
 
               <div class="kv-box" style="background:#16a34a;border-color:#16a34a;">
@@ -405,12 +405,12 @@ function render() {
 
               <div class="kv-box">
                 <div class="kv-k">SOBT</div>
-                <div class="kv-v">${f.SOBT || "--:--"}</div>
+                <div class="kv-v">${convertTime(f.SOBT) || "--:--"}</div>
               </div>
 
               <div class="kv-box">
                 <div class="kv-k">AIBT</div>
-                <div class="kv-v">${f.AIBT || "--:--"}</div>
+                <div class="kv-v">${convertTime(f.AIBT) || "--:--"}</div>
               </div>
 
               <div class="kv-box" style="${cd.over ? 'background:#fee2e2;border-color:#fca5a5;' : 'background:#93c5fd;border-color:#93c5fd;'}">
@@ -420,7 +420,7 @@ function render() {
 
               <div class="kv-box">
                 <div class="kv-k">AOBT</div>
-                <div class="kv-v">${f.AOBT || "--:--"}</div>
+                <div class="kv-v">${convertTime(f.AOBT) || "--:--"}</div>
               </div>
 
             </div>
@@ -646,10 +646,29 @@ function toggleConnection(){
   }
 }
 
+
+// ===== Conversion heure locale <-> UTC =====
+function getLocalOffsetMins(){
+  // offset en minutes : positif si UTC+x, négatif si UTC-x
+  return -new Date().getTimezoneOffset();
+}
+
+function convertTime(hhmmStr){
+  if(!hhmmStr || !hhmmStr.includes(":")) return hhmmStr;
+  const mins = parseHHMM(hhmmStr);
+  if(mins == null) return hhmmStr;
+  if(isUTC){
+    // local -> UTC : soustraire offset
+    const utcMins = ((mins - getLocalOffsetMins()) % 1440 + 1440) % 1440;
+    return fmtHHMM(utcMins);
+  }
+  return hhmmStr; // déjà local
+}
 function toggleUTC(){
   isUTC = !isUTC
   localStorage.setItem('dashboard_utc', isUTC ? '1' : '0')
   document.getElementById('utcToggle').textContent = isUTC ? 'UTC' : 'LOCAL'
+  render()
 }
 
 // Restore UTC preference
