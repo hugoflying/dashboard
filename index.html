@@ -161,7 +161,7 @@ font-weight:700;
 </div>
 
 <div class="tags are-medium mb-0">
-<span id="connState" class="tag is-warning status-tag">Connexion…</span>
+<span id="connState" class="tag is-warning status-tag" onclick="toggleConnection()" style="cursor:pointer;" title="Cliquer pour déconnecter/reconnecter">Connexion…</span>
 <span id="lastUpdate" class="tag is-light status-tag">--</span>
 </div>
 </div>
@@ -224,6 +224,7 @@ function connect() {
 }
 
 function scheduleReconnect(){
+if(manuallyDisconnected) return
 clearTimeout(reconnectTimer)
 reconnectTimer=setTimeout(connect,3000)
 }
@@ -468,6 +469,20 @@ async function deleteFlight(flightKey){
     );
     console.log("DELETE", flightKey, res.status);
   }catch(e){ console.error("Delete error", e); }
+}
+
+let manuallyDisconnected = false
+
+function toggleConnection(){
+  if(manuallyDisconnected){
+    manuallyDisconnected = false
+    connect()
+  } else {
+    manuallyDisconnected = true
+    clearTimeout(reconnectTimer)
+    if(socket){ try{ socket.close() }catch(_){} socket = null }
+    setConn("is-light", "Déconnecté (cliquer pour reconnecter)")
+  }
 }
 </script>
 
