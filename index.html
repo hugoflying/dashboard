@@ -161,6 +161,26 @@ font-weight:700;
 @media(max-width:480px){
 .kv-grid{grid-template-columns:1fr}
 }
+
+html.dark .button.is-light{
+  background: rgba(255,255,255,.08) !important;
+  color: var(--text) !important;
+  border-color: rgba(255,255,255,.12) !important;
+}
+html.dark .button.is-light:hover{
+  background: rgba(255,255,255,.14) !important;
+}
+html.dark .tag.is-light{
+  background: rgba(255,255,255,.1) !important;
+  color: var(--text) !important;
+}
+
+html.dark #utcToggle,
+html.dark #darkToggle{
+  background: rgba(255,255,255,.08) !important;
+  color: var(--text) !important;
+  border-color: rgba(255,255,255,.12) !important;
+}
 </style>
 </head>
 
@@ -177,7 +197,7 @@ font-weight:700;
 
 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
 <button id="darkToggle" onclick="toggleDark()" class="button is-small is-light" style="font-size:1.1rem;padding:0 10px;height:32px;">🌙</button>
-<button id="utcToggle" onclick="toggleUTC()" class="button is-small is-light" style="font-weight:800;height:32px;">LCL</button>
+<button id="utcToggle" onclick="toggleUTC()" class="button is-small is-light" style="font-weight:800;height:32px;">LOCAL</button>
 <div class="tags are-medium mb-0">
 <span id="connState" class="tag is-warning status-tag" onclick="toggleConnection()" style="cursor:pointer;" title="Cliquer pour déconnecter">Connexion…</span>
 <span id="lastUpdate" class="tag is-light status-tag">--</span>
@@ -629,7 +649,7 @@ function toggleConnection(){
 function toggleUTC(){
   isUTC = !isUTC
   localStorage.setItem('dashboard_utc', isUTC ? '1' : '0')
-  document.getElementById('utcToggle').textContent = isUTC ? 'UTC' : 'LCL'
+  document.getElementById('utcToggle').textContent = isUTC ? 'UTC' : 'LOCAL'
 }
 
 // Restore UTC preference
