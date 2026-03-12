@@ -376,8 +376,8 @@ function render() {
   const active = [...flights.values()]
     .filter(isActiveFlight)
     .sort((a, b) => {
-      const ta = computeEOBT(a) ?? parseHHMM(a.SOBT) ?? 9999;
-      const tb = computeEOBT(b) ?? parseHHMM(b.SOBT) ?? 9999;
+      const ta = computeEOBT(a) ?? parseHHMM(a.SOBT) ?? parseHHMM(a.SIBT) ?? 9999;
+      const tb = computeEOBT(b) ?? parseHHMM(b.SOBT) ?? parseHHMM(b.SIBT) ?? 9999;
       return ta - tb;
     });
 
@@ -499,14 +499,16 @@ function diffSigned(t,ref){
 function computeEOBT(f){
   const cie  = (f.Cie  || "").toUpperCase();
   const from = (f.From || "").toUpperCase().trim();
-  const isBVA = from === "BVA";
+  const isBVA = from === "BVA" || !f.SOBT;
 
   const sibttxt = f.SIBT || "";
   const aibttxt = f.AIBT || "";
   const sobttxt = f.SOBT || "";
-  const ctottxt = f.EOBT || ""; // EOBT stocké = CTOT/EOBT du serveur
+  const ctottxt = f.EOBT || "";
 
-  if(!cie || !sobttxt || (!sibttxt && !isBVA)) return null;
+  // Vol ARR sans départ : pas d'EOBT calculable
+  if(!sobttxt) return null;
+  if(!cie || (!sibttxt && !isBVA)) return null;
 
   const SIBT = parseHHMM(isBVA ? sobttxt : sibttxt);
   const SOBT = parseHHMM(sobttxt);
@@ -560,11 +562,13 @@ function computeCountdown(f){
   const sobttxt = f.SOBT || "";
   const aobtTxt = f.AOBT || "";
   const from    = (f.From||"").toUpperCase().trim();
-  const isBVA   = from === "BVA";
+  const isBVA   = from === "BVA" || !sobttxt;
   const sibttxt = f.SIBT || "";
   const aibttxt = f.AIBT || "";
 
-  if(!sobttxt || (!isBVA && (!aibttxt || !sibttxt))) return {text:"--:--", over:false};
+  // Vol ARR sans départ : pas de CD calculable
+  if(!sobttxt) return {text:"--:--", over:false};
+  if(!isBVA && (!aibttxt || !sibttxt)) return {text:"--:--", over:false};
 
   const SOBT = parseHHMM(sobttxt);
   const SIBT = isBVA ? SOBT : parseHHMM(sibttxt);
