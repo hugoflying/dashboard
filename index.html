@@ -125,23 +125,12 @@ justify-content:space-between;
 align-items:flex-start;
 gap:1rem;
 }
-
 .close-btn{
-background:none;
-border:none;
-cursor:pointer;
-color:var(--muted);
-font-size:1.2rem;
-line-height:1;
-padding:2px 6px;
-border-radius:8px;
-transition:background .15s, color .15s;
-flex-shrink:0;
+background:none;border:none;cursor:pointer;color:var(--muted);
+font-size:1.2rem;line-height:1;padding:2px 6px;border-radius:8px;
+transition:background .15s,color .15s;flex-shrink:0;
 }
-.close-btn:hover{
-background:rgba(239,68,68,.1);
-color:#ef4444;
-}
+.close-btn:hover{background:rgba(239,68,68,.1);color:#ef4444;}
 
 .small-meta{
 text-align:right;
@@ -190,20 +179,7 @@ let socket=null
 let reconnectTimer=null
 const flights=new Map()
 
-function async function deleteFlight(flightKey){
-  if(!flightKey) return;
-  try{
-    await fetch(`https://turnaround-sync.deruellehugo-49c.workers.dev/${encodeURIComponent(flightKey)}`, {
-      method: "DELETE"
-    });
-    flights.delete(flightKey);
-    render();
-  }catch(e){
-    console.error("Delete error", e);
-  }
-}
-
-connect() {
+function connect() {
 
   socket = new WebSocket(WS_URL);
 
@@ -216,20 +192,7 @@ connect() {
   socket.onclose = () => {
     setConn("is-danger", "Déconnecté");
     console.log("DASHBOARD WS CLOSED");
-    scheduleReasync function deleteFlight(flightKey){
-  if(!flightKey) return;
-  try{
-    await fetch(`https://turnaround-sync.deruellehugo-49c.workers.dev/${encodeURIComponent(flightKey)}`, {
-      method: "DELETE"
-    });
-    flights.delete(flightKey);
-    render();
-  }catch(e){
-    console.error("Delete error", e);
-  }
-}
-
-connect();
+    scheduleReconnect();
   };
 
   socket.onerror = (err) => {
@@ -249,20 +212,7 @@ connect();
 
 }
 
-function scheduleReasync function deleteFlight(flightKey){
-  if(!flightKey) return;
-  try{
-    await fetch(`https://turnaround-sync.deruellehugo-49c.workers.dev/${encodeURIComponent(flightKey)}`, {
-      method: "DELETE"
-    });
-    flights.delete(flightKey);
-    render();
-  }catch(e){
-    console.error("Delete error", e);
-  }
-}
-
-connect(){
+function scheduleReconnect(){
 clearTimeout(reconnectTimer)
 reconnectTimer=setTimeout(connect,3000)
 }
@@ -370,7 +320,7 @@ function render() {
                 <div class="flight-title">${flightNumber}</div>
                 <div class="flight-subtitle">${f.To || "--"}</div>
               </div>
-              <button class="close-btn" onclick="deleteFlight('${f.flightKey}')" title="Fermer ce vol">✕</button>
+              <button class="close-btn" onclick="deleteFlight('${f.flightKey}')" title="Fermer">✕</button>
             </div>
 
             <div class="mt-3 mb-3">
@@ -475,21 +425,17 @@ render()
 
 setInterval(render,1000)
 
+connect()
+
+
 async function deleteFlight(flightKey){
   if(!flightKey) return;
   try{
-    await fetch(`https://turnaround-sync.deruellehugo-49c.workers.dev/${encodeURIComponent(flightKey)}`, {
-      method: "DELETE"
-    });
+    await fetch(`https://turnaround-sync.deruellehugo-49c.workers.dev/${encodeURIComponent(flightKey)}`,{method:"DELETE"});
     flights.delete(flightKey);
     render();
-  }catch(e){
-    console.error("Delete error", e);
-  }
+  }catch(e){ console.error("Delete error",e); }
 }
-
-connect()
-
 </script>
 
 </body>
