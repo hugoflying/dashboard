@@ -652,7 +652,7 @@ setInterval(()=>{
   render()
   if(!manuallyDisconnected && socket && socket.readyState === WebSocket.OPEN){
     document.getElementById("lastUpdate").textContent =
-      "Maj : " + new Date().toLocaleTimeString("fr-FR")
+      (lang === "EN" ? "Upd: " : "Maj : ") + new Date().toLocaleTimeString("fr-FR")
   }
 },1000)
 
