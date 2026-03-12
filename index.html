@@ -181,6 +181,11 @@ html.dark #darkToggle{
   color: var(--text) !important;
   border-color: rgba(255,255,255,.12) !important;
 }
+
+html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
+  background: rgba(255,255,255,.04) !important;
+  border-color: rgba(255,255,255,.08) !important;
+}
 </style>
 </head>
 
@@ -393,7 +398,7 @@ function render() {
 
             <div class="kv-grid">
 
-              <div class="kv-box">
+              <div class="kv-box" style="background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);">
                 <div class="kv-k">SIBT</div>
                 <div class="kv-v">${convertTime(f.SIBT) || "--:--"}</div>
               </div>
@@ -403,7 +408,7 @@ function render() {
                 <div class="kv-v" style="color:#fff;">${eobtStr}</div>
               </div>
 
-              <div class="kv-box">
+              <div class="kv-box" style="background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);">
                 <div class="kv-k">SOBT</div>
                 <div class="kv-v">${convertTime(f.SOBT) || "--:--"}</div>
               </div>
