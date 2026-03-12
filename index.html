@@ -362,9 +362,9 @@ function render() {
                 <div class="kv-v">${f.SIBT || "--:--"}</div>
               </div>
 
-              <div class="kv-box">
-                <div class="kv-k">AIBT</div>
-                <div class="kv-v">${f.AIBT || "--:--"}</div>
+              <div class="kv-box" style="background:#16a34a;border-color:#16a34a;">
+                <div class="kv-k" style="color:rgba(255,255,255,.75);">EOBT</div>
+                <div class="kv-v" style="color:#fff;">${eobtStr}</div>
               </div>
 
               <div class="kv-box">
@@ -373,13 +373,13 @@ function render() {
               </div>
 
               <div class="kv-box">
-                <div class="kv-k">EOBT</div>
-                <div class="kv-v">${eobtStr}</div>
+                <div class="kv-k">AIBT</div>
+                <div class="kv-v">${f.AIBT || "--:--"}</div>
               </div>
 
-              <div class="kv-box">
-                <div class="kv-k">CD</div>
-                <div class="kv-v" style="${cd.over ? 'color:#ef4444;font-weight:900' : ''}">${cd.text}</div>
+              <div class="kv-box" style="${cd.over ? 'background:#fee2e2;border-color:#fca5a5;' : 'background:#93c5fd;border-color:#93c5fd;'}">
+                <div class="kv-k" style="${cd.over ? 'color:#ef4444;' : 'color:rgba(0,0,0,.55);'}">CD</div>
+                <div class="kv-v" style="${cd.over ? 'color:#ef4444;' : 'color:#111;'}">${cd.text}</div>
               </div>
 
               <div class="kv-box">
