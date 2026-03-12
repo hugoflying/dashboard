@@ -342,9 +342,9 @@ function render() {
                 <div class="flight-subtitle">${sub}</div>
               </div>
               <div style="text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-                ${stand ? '<div style="font-size:1.3rem;font-weight:900;line-height:1;">' + stand + '</div>' : ""}
-                ${ctot ? '<div style="font-size:.75rem;font-weight:800;color:#7c3aed;">CTOT ' + ctot + '</div>' : ""}
-                <button class="close-btn" onclick="deleteFlight(\'' + f.flightKey + '\')" title="Fermer">✕</button>
+                ${stand ? `<div style="font-size:1.3rem;font-weight:900;line-height:1;">${stand}</div>` : ""}
+                ${ctot ? `<div style="font-size:.75rem;font-weight:800;color:#7c3aed;">CTOT ${ctot}</div>` : ""}
+                <button class="close-btn" onclick="deleteFlight('${f.flightKey}')" title="Fermer">✕</button>
               </div>
             </div>
 
