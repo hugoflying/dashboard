@@ -475,13 +475,16 @@ let manuallyDisconnected = false
 
 function toggleConnection(){
   if(manuallyDisconnected){
-    // déjà déconnecté, rien à faire
-    return
+    // Reconnecter
+    manuallyDisconnected = false
+    connect()
+  } else {
+    // Déconnecter
+    manuallyDisconnected = true
+    clearTimeout(reconnectTimer)
+    if(socket){ try{ socket.close() }catch(_){} socket = null }
+    setConn("is-danger", "Déconnecté")
   }
-  manuallyDisconnected = true
-  clearTimeout(reconnectTimer)
-  if(socket){ try{ socket.close() }catch(_){} socket = null }
-  setConn("is-danger", "Déconnecté")
 }
 </script>
 
