@@ -329,7 +329,8 @@ function render() {
     const ctot    = f.CTOT || "";
     const immat   = (f.Immat||"").toUpperCase();
     const actype  = (f.TypeAvion||"").toUpperCase();
-    const sub     = [route, immat, actype].filter(Boolean).join(" · ");
+    const sub1    = route;
+    const sub2    = [immat, actype].filter(Boolean).join(" · ");
 
     return `
       <div class="column is-4-desktop is-6-tablet is-12-mobile">
@@ -339,11 +340,11 @@ function render() {
             <div class="header-line">
               <div style="flex:1;min-width:0;">
                 <div class="flight-title">${arrVol}</div>
-                <div class="flight-subtitle">${sub}</div>
+                <div class="flight-subtitle">${sub1}</div>
+                ${sub2 ? `<div class="flight-subtitle">${sub2}</div>` : ""}
               </div>
               <div style="text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
                 ${stand ? `<div style="font-size:1.3rem;font-weight:900;line-height:1;">${stand}</div>` : ""}
-                ${ctot ? `<div style="font-size:.75rem;font-weight:800;color:#7c3aed;">CTOT ${ctot}</div>` : ""}
                 <button class="close-btn" onclick="deleteFlight('${f.flightKey}')" title="Fermer">✕</button>
               </div>
             </div>
