@@ -89,6 +89,10 @@ font-weight:900;
 font-size:1.25rem;
 font-weight:900;
 }
+.cd-over{
+color:#ef4444 !important;
+font-weight:900 !important;
+}
 
 .topbar{
 display:flex;
@@ -313,7 +317,9 @@ function render() {
 
     const status = computeStatus(f);
     const flightNumber = `${f.Cie || ""}${f.NVol || ""}`.trim() || "--";
-    const countdown = computeCountdown(f);
+    const cd = computeCountdown(f);
+    const eobtMins = computeEOBT(f);
+    const eobtStr = eobtMins != null ? fmtHHMM(eobtMins) : (f.EOBT || "--:--");
 
     const arrVol  = f.Cie && f.NVol ? (f.Cie + f.NVol) : "";
     const route   = [f.From, f.To].filter(Boolean).join(" → ") || "--";
@@ -356,12 +362,12 @@ function render() {
 
               <div class="kv-box">
                 <div class="kv-k">EOBT</div>
-                <div class="kv-v">${f.EOBT || "--:--"}</div>
+                <div class="kv-v">${eobtStr}</div>
               </div>
 
               <div class="kv-box">
                 <div class="kv-k">CD</div>
-                <div class="kv-v">${countdown || "--:--"}</div>
+                <div class="kv-v" style="${cd.over ? 'color:#ef4444;font-weight:900' : ''}">${cd.text}</div>
               </div>
 
               <div class="kv-box">
@@ -379,26 +385,135 @@ function render() {
 
 }
 
-function computeCountdown(f) {
-  const ref = f.EOBT || f.SOBT;
-  if (!ref || !String(ref).includes(":")) return "";
+// ===== Helpers =====
+function parseHHMM(str){
+  if(!str || !String(str).includes(":")) return null;
+  const[h,m]=String(str).split(":").map(Number);
+  if(isNaN(h)||isNaN(m)) return null;
+  return h*60+m;
+}
+function fmtHHMM(mins){
+  const v=((mins%1440)+1440)%1440;
+  return String(Math.floor(v/60)).padStart(2,"0")+":"+String(v%60).padStart(2,"0");
+}
+function diffSigned(t,ref){
+  let d=t-ref;
+  if(d>720)d-=1440;
+  if(d<-720)d+=1440;
+  return d;
+}
 
-  const [hh, mm] = String(ref).split(":").map(Number);
-  if (Number.isNaN(hh) || Number.isNaN(mm)) return "";
+// ===== Calcul EOBT selon compagnie/type (même logique que l'app) =====
+function computeEOBT(f){
+  const cie  = (f.Cie  || "").toUpperCase();
+  const from = (f.From || "").toUpperCase().trim();
+  const isBVA = from === "BVA";
 
+  const sibttxt = f.SIBT || "";
+  const aibttxt = f.AIBT || "";
+  const sobttxt = f.SOBT || "";
+  const ctottxt = f.EOBT || ""; // EOBT stocké = CTOT/EOBT du serveur
+
+  if(!cie || !sobttxt || (!sibttxt && !isBVA)) return null;
+
+  const SIBT = parseHHMM(isBVA ? sobttxt : sibttxt);
+  const SOBT = parseHHMM(sobttxt);
+  if(SIBT==null||SOBT==null) return null;
+
+  const AIBT = isBVA ? SOBT : (aibttxt ? parseHHMM(aibttxt) : SIBT);
+  if(AIBT==null) return null;
+
+  const SIBT_ext = SIBT;
+  const AIBT_ext = SIBT_ext + diffSigned(AIBT, SIBT);
+  const SOBT_ext = SIBT_ext + diffSigned(SOBT, SIBT);
+
+  const crewChange = !!(f.ArrPNT || f.ArrPNC);
+  const isDelayed = AIBT_ext > SIBT_ext;
+
+  let EOBT_raw_ext = null;
+
+  if(!isDelayed){
+    EOBT_raw_ext = SOBT_ext;
+  } else if(cie==="FR"||cie==="RK"){
+    const turn = crewChange ? 35 : 25;
+    const candidate = AIBT_ext + turn;
+    EOBT_raw_ext = candidate <= SOBT_ext ? SOBT_ext : candidate;
+  } else if(cie==="W4"||cie==="W6"){
+    const type = (f.TypeAvion||"").toUpperCase();
+    const turn = (type==="A321"||type==="A21N"||type==="A21NY") ? 35 : 30;
+    const candidate = AIBT_ext + turn;
+    EOBT_raw_ext = candidate <= SOBT_ext ? SOBT_ext : candidate;
+  } else {
+    const rot = SOBT_ext - SIBT_ext;
+    EOBT_raw_ext = AIBT_ext + rot;
+  }
+
+  let EOBT_raw = ((EOBT_raw_ext%1440)+1440)%1440;
+
+  // Règle CTOT
+  let EOBT_adj_ext = EOBT_raw_ext;
+  if(ctottxt){
+    const CTOT = parseHHMM(ctottxt);
+    if(CTOT!=null){
+      const CTOT_ext = EOBT_raw_ext + diffSigned(CTOT, EOBT_raw);
+      if(CTOT_ext > EOBT_raw_ext + 15) EOBT_adj_ext = CTOT_ext - 15;
+    }
+  }
+
+  return ((EOBT_adj_ext%1440)+1440)%1440;
+}
+
+// ===== CD : mm:ss, rouge si positif =====
+function computeCountdown(f){
+  const sobttxt = f.SOBT || "";
+  const aobtTxt = f.AOBT || "";
+  const from    = (f.From||"").toUpperCase().trim();
+  const isBVA   = from === "BVA";
+  const sibttxt = f.SIBT || "";
+  const aibttxt = f.AIBT || "";
+
+  if(!sobttxt || (!isBVA && (!aibttxt || !sibttxt))) return {text:"--:--", over:false};
+
+  const SOBT = parseHHMM(sobttxt);
+  const SIBT = isBVA ? SOBT : parseHHMM(sibttxt);
+  const AIBT = isBVA ? SOBT : parseHHMM(aibttxt);
+  if(SOBT==null||SIBT==null||AIBT==null) return {text:"--:--", over:false};
+
+  // cible = SOBT si pas de retard, sinon EOBT calculé
+  let targetMin = AIBT <= SIBT ? SOBT : computeEOBT(f);
+  if(targetMin==null) return {text:"--:--", over:false};
+
+  let totalSeconds;
+
+  if(aobtTxt){
+    // Vol parti : affiche diff AOBT - cible (figé)
+    const AOBT = parseHHMM(aobtTxt);
+    if(AOBT==null) return {text:"--:--", over:false};
+    let diffMin = AOBT - targetMin;
+    if(diffMin>720) diffMin-=1440;
+    if(diffMin<-720) diffMin+=1440;
+    totalSeconds = diffMin*60;
+    const abs = Math.abs(totalSeconds);
+    const mm = Math.floor(abs/60);
+    const ss = abs%60;
+    const sign = totalSeconds>=0 ? "+" : "-";
+    return {text:`${sign}${String(mm).padStart(2,"0")}:${String(ss).padStart(2,"0")}`, over:totalSeconds>0};
+  }
+
+  // Live : décompte jusqu'à 0 puis +
   const now = new Date();
-  const target = new Date();
-  target.setHours(hh, mm, 0, 0);
+  const nowMins = now.getHours()*60 + now.getMinutes();
+  const nowSecs = now.getSeconds();
+  let diffMin = targetMin - nowMins;
+  if(diffMin<-720) diffMin+=1440;
+  if(diffMin>720)  diffMin-=1440;
+  totalSeconds = diffMin*60 - nowSecs;
 
-  const diffMs = target.getTime() - now.getTime();
-  const totalMin = Math.round(diffMs / 60000);
-
-  const sign = totalMin < 0 ? "-" : "";
-  const abs = Math.abs(totalMin);
-  const h = Math.floor(abs / 60);
-  const m = abs % 60;
-
-  return `${sign}${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  const sign = totalSeconds<=0 ? "+" : "";
+  const abs = Math.abs(totalSeconds);
+  const mm = Math.floor(abs/60);
+  const ss = abs%60;
+  return {text:`${sign}${String(mm).padStart(2,"0")}:${String(ss).padStart(2,"0")}`, over:totalSeconds<0};
 }
 
 function handleMessage(msg){
