@@ -17,6 +17,17 @@
 --shadow:0 10px 24px rgba(0,0,0,.08);
 }
 
+html.dark{
+--bg:#0f1115;
+--card:#1c1f26;
+--text:#f3f4f6;
+--muted:#9ca3af;
+--border:rgba(255,255,255,.08);
+--shadow:0 10px 24px rgba(0,0,0,.4);
+}
+html.dark .kv-box{ background:rgba(255,255,255,.04); }
+html.dark .empty-box{ background:var(--card); }
+
 html,body{
 background:var(--bg);
 color:var(--text);
@@ -164,9 +175,12 @@ font-weight:700;
 <p class="muted mb-0">Vols en cours de traitement</p>
 </div>
 
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+<button id="darkToggle" onclick="toggleDark()" class="button is-small is-light" style="font-size:1.1rem;padding:0 10px;height:32px;">🌙</button>
 <div class="tags are-medium mb-0">
 <span id="connState" class="tag is-warning status-tag" onclick="toggleConnection()" style="cursor:pointer;" title="Cliquer pour déconnecter">Connexion…</span>
 <span id="lastUpdate" class="tag is-light status-tag">--</span>
+</div>
 </div>
 </div>
 
@@ -608,6 +622,18 @@ function toggleConnection(){
     if(socket){ try{ socket.close() }catch(_){} socket = null }
     setConn("is-danger", "Déconnecté")
   }
+}
+
+function toggleDark(){
+  const isDark = document.documentElement.classList.toggle('dark')
+  localStorage.setItem('dashboard_dark', isDark ? '1' : '0')
+  document.getElementById('darkToggle').textContent = isDark ? '☀️' : '🌙'
+}
+
+// Restore preference
+if(localStorage.getItem('dashboard_dark') === '1'){
+  document.documentElement.classList.add('dark')
+  document.getElementById('darkToggle').textContent = '☀️'
 }
 </script>
 
