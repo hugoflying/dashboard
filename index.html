@@ -219,7 +219,6 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
   </div>
 
   <!-- Droite : connexion + heure -->
-  <button class="button is-small is-danger is-light" onclick="clearAll()" style="font-weight:800;height:32px;" title="Effacer tous les vols">🗑</button>
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
     <span id="connState" class="tag is-warning status-tag" onclick="toggleConnection()" style="cursor:pointer;" title="Cliquer pour déconnecter">Connexion…</span>
     <span id="lastUpdate" class="tag is-light status-tag">--</span>
@@ -244,8 +243,6 @@ let lang  = localStorage.getItem('dashboard_lang') || 'FR'
 const flights=new Map()
 
 const deletedKeys = new Set()
-// Nettoyer l'ancien localStorage si présent
-try{ localStorage.removeItem("dashboard_deleted_flights"); }catch(_){}
 
 function connect() {
 
@@ -689,18 +686,19 @@ async function clearAll(){
 
 async function deleteFlight(flightKey){
   if(!flightKey) return;
-  // Suppression locale immédiate + blacklist pour éviter le retour au snapshot
   deletedKeys.add(flightKey);
   flights.delete(flightKey);
   render();
-  // Notification au serveur
   try{
-    const res = await fetch(
-      `https://turnaround-sync.deruellehugo-49c.workers.dev/${encodeURIComponent(flightKey)}`,
-      { method: "DELETE" }
-    );
-    console.log("DELETE", flightKey, res.status);
-  }catch(e){ console.error("Delete error", e); }
+    const url = `https://turnaround-sync.deruellehugo-49c.workers.dev/${encodeURIComponent(flightKey)}`;
+    console.log("[DELETE] →", url);
+    const res = await fetch(url, { method: "DELETE" });
+    console.log("[DELETE] status:", res.status, await res.text());
+    if(!res.ok) alert("Erreur suppression: " + res.status);
+  }catch(e){
+    console.error("[DELETE] error:", e);
+    alert("Erreur réseau: " + e.message);
+  }
 }
 
 let manuallyDisconnected = false
