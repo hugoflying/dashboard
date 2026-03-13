@@ -290,10 +290,8 @@ function connect() {
   socket.onmessage = (event) => {
     try {
       const msg = JSON.parse(event.data);
-      console.log("DASHBOARD WS RECEIVED", msg);
       handleMessage(msg);
     } catch (e) {
-      console.error("DASHBOARD WS PARSE ERROR", event.data);
     }
   };
 
@@ -422,8 +420,6 @@ function render() {
   }
 
   cards.innerHTML = active.map(f => {
-    console.log("RENDER FLIGHT =", f);
-
     const status = computeStatus(f);
     const flightNumber = `${f.Cie || ""}${f.NVol || ""}`.trim() || "--";
     const cd = computeCountdown(f);
@@ -713,9 +709,7 @@ async function deleteFlight(flightKey){
   render();
   try{
     const url = `https://turnaround-sync.deruellehugo-49c.workers.dev/${encodeURIComponent(flightKey)}`;
-    console.log("[DELETE] →", url);
     const res = await fetch(url, { method: "DELETE" });
-    console.log("[DELETE] status:", res.status, await res.text());
     if(!res.ok) alert("Erreur suppression: " + res.status);
   }catch(e){
     console.error("[DELETE] error:", e);
