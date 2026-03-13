@@ -309,7 +309,10 @@ return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`
 }
 
 function isActiveFlight(f){
+  const imported = (hasValue(f.SIBT) || hasValue(f.SOBT)) && hasValue(f.NVol)
+
   const started =
+    imported ||
     hasValue(f.AIBT)||
     hasValue(f.ArrPNT)||
     hasValue(f.ArrPNC)||
