@@ -441,7 +441,7 @@ function render() {
     const eobtMins = computeEOBT(f);
     const eobtStr = eobtMins != null ? convertTime(fmtHHMM(eobtMins)) : convertTime(f.EOBT || "--:--");
 
-    const arrVol  = (f.Cie||"") + (f.NVol||"") || "--";
+    const arrVol  = (f.__depFF || f.__arrFF || (f.Cie||"") + (f.NVol||"")).trim() || "--";
     const from    = (f.From||"").toUpperCase();
     const to      = (f.To||"").toUpperCase();
     const route   = from && to ? from + " → " + to : (from || to || "--");
