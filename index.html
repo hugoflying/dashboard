@@ -217,6 +217,14 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
   .page-wrap{ padding: 10px !important; }
   .topbar{ margin-bottom: 1rem !important; }
 }
+
+.legend{
+  display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;
+  justify-content:center;padding:1rem;margin-top:1.5rem;
+  font-size:.78rem;font-weight:700;color:var(--muted);
+}
+.legend-item{ display:flex;align-items:center;gap:6px; }
+.legend-dot{ width:12px;height:12px;border-radius:4px;flex-shrink:0; }
 </style>
 </head>
 
@@ -251,6 +259,13 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
 
 <div id="cards" class="columns is-multiline"></div>
 
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#dbeafe;border:1.5px solid #3b82f6;"></div><span id="leg-early">En avance</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#dcfce7;border:1.5px solid #16a34a;"></div><span id="leg-ontime">A l'heure</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ffedd5;border:1.5px solid #f97316;"></div><span id="leg-late">Retard &lt; 15 min</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fee2e2;border:1.5px solid #ef4444;"></div><span id="leg-verylate">Retard &ge; 15 min</span></div>
 </div>
 </section>
 
@@ -783,6 +798,10 @@ function updateLangUI(){
   }
   const sub = document.getElementById('pageSubtitle')
   if(sub) sub.textContent = lang === 'EN' ? 'Flights in progress' : 'Vols en cours de traitement'
+  const le = document.getElementById('leg-early');    if(le) le.textContent = lang==='EN' ? 'Early' : 'En avance';
+  const lo = document.getElementById('leg-ontime');   if(lo) lo.textContent = lang==='EN' ? 'On time' : "A l'heure";
+  const ll = document.getElementById('leg-late');     if(ll) ll.textContent = lang==='EN' ? 'Delay < 15 min' : 'Retard < 15 min';
+  const lv = document.getElementById('leg-verylate'); if(lv) lv.textContent = lang==='EN' ? 'Delay >= 15 min' : 'Retard >= 15 min';
 }
 
 // Restore lang preference
