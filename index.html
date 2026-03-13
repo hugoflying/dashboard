@@ -477,20 +477,30 @@ function render() {
                 <div class="kv-v">${convertTime(f.SOBT) || "--:--"}</div>
               </div>
 
-              <div class="kv-box">
-                <div class="kv-k">AIBT</div>
-                <div class="kv-v">${convertTime(f.AIBT) || "--:--"}</div>
-              </div>
+              ${(()=>{
+                const c = delayColor(f.AIBT, f.SIBT);
+                const s = c ? `background:${c.bg};border-color:${c.border};` : '';
+                const t = c ? `color:${c.text};` : '';
+                return `<div class="kv-box" style="${s}">
+                  <div class="kv-k">AIBT</div>
+                  <div class="kv-v" style="${t}">${convertTime(f.AIBT) || "--:--"}</div>
+                </div>`;
+              })()}
 
               <div class="kv-box" style="${cd.over ? 'background:#fee2e2;border-color:#fca5a5;' : 'background:#93c5fd;border-color:#93c5fd;'}">
                 <div class="kv-k" style="${cd.over ? 'color:#ef4444;' : 'color:rgba(0,0,0,.55);'}">CD</div>
                 <div class="kv-v" style="${cd.over ? 'color:#ef4444;' : 'color:#111;'}">${cd.text}</div>
               </div>
 
-              <div class="kv-box">
-                <div class="kv-k">AOBT</div>
-                <div class="kv-v">${convertTime(f.AOBT) || "--:--"}</div>
-              </div>
+              ${(()=>{
+                const c = delayColor(f.AOBT, f.SOBT);
+                const s = c ? `background:${c.bg};border-color:${c.border};` : '';
+                const t = c ? `color:${c.text};` : '';
+                return `<div class="kv-box" style="${s}">
+                  <div class="kv-k">AOBT</div>
+                  <div class="kv-v" style="${t}">${convertTime(f.AOBT) || "--:--"}</div>
+                </div>`;
+              })()}
 
             </div>
 
@@ -805,6 +815,19 @@ function toggleDark(){
 if(localStorage.getItem('dashboard_dark') === '1'){
   document.documentElement.classList.add('dark')
   document.getElementById('darkToggle').textContent = 'SOMBRE'
+}
+
+function delayColor(actualStr, plannedStr){
+  const actual  = parseHHMM(actualStr);
+  const planned = parseHHMM(plannedStr);
+  if(actual == null || planned == null) return null; // pas de couleur
+  let diff = actual - planned;
+  if(diff > 720)  diff -= 1440;
+  if(diff < -720) diff += 1440;
+  if(diff < 0)  return { bg:'#dbeafe', border:'#3b82f6', text:'#1d4ed8' }; // bleu - en avance
+  if(diff === 0) return { bg:'#dcfce7', border:'#16a34a', text:'#15803d' }; // vert - à l'heure
+  if(diff < 15)  return { bg:'#ffedd5', border:'#f97316', text:'#c2410c' }; // orange - retard < 15
+  return           { bg:'#fee2e2', border:'#ef4444', text:'#b91c1c' };     // rouge - retard >= 15
 }
 </script>
 
