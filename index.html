@@ -195,6 +195,22 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
   background: rgba(255,255,255,.04) !important;
   border-color: rgba(255,255,255,.08) !important;
 }
+
+@media(max-width:600px){
+  .topbar{
+    flex-wrap:wrap;
+    gap:.5rem;
+  }
+  .topbar-title{
+    position:static;
+    transform:none;
+    order:-1;
+    width:100%;
+    text-align:center;
+  }
+  .topbar h1{ font-size:1.2rem; }
+  .topbar p{ font-size:.8rem; }
+}
 </style>
 </head>
 
