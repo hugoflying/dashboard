@@ -219,6 +219,7 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
   </div>
 
   <!-- Droite : connexion + heure -->
+  <button class="button is-small is-danger is-light" onclick="clearAll()" style="font-weight:800;height:32px;" title="Effacer tous les vols">🗑</button>
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
     <span id="connState" class="tag is-warning status-tag" onclick="toggleConnection()" style="cursor:pointer;" title="Cliquer pour déconnecter">Connexion…</span>
     <span id="lastUpdate" class="tag is-light status-tag">--</span>
@@ -670,6 +671,20 @@ setInterval(()=>{
 
 connect()
 
+
+async function clearAll(){
+  if(!confirm(lang==="EN" ? "Clear all flights?" : "Effacer tous les vols ?")) return;
+  // Supprimer chaque vol localement et sur le serveur
+  const keys = [...flights.keys()]
+  for(const key of keys){
+    deletedKeys.add(key)
+    flights.delete(key)
+    try{
+      await fetch(`https://turnaround-sync.deruellehugo-49c.workers.dev/${encodeURIComponent(key)}`, {method:"DELETE"})
+    }catch(e){}
+  }
+  render()
+}
 
 async function deleteFlight(flightKey){
   if(!flightKey) return;
