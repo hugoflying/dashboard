@@ -223,7 +223,7 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
 
   <!-- Gauche : toggles -->
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-    <button id="darkToggle" onclick="toggleDark()" class="button is-small is-light" style="font-size:1.1rem;padding:0 10px;height:32px;">🌙</button>
+    <button id="darkToggle" onclick="toggleDark()" class="button is-small is-light" style="font-weight:800;height:32px;">CLAIR</button>
     <button id="utcToggle" onclick="toggleUTC()" class="button is-small is-light" style="font-weight:800;height:32px;">LOCAL</button>
     <button id="langToggle" onclick="toggleLang()" class="button is-small is-light" style="font-weight:800;height:32px;">FR</button>
   </div>
@@ -798,13 +798,13 @@ if(localStorage.getItem('dashboard_utc') === '1'){
 function toggleDark(){
   const isDark = document.documentElement.classList.toggle('dark')
   localStorage.setItem('dashboard_dark', isDark ? '1' : '0')
-  document.getElementById('darkToggle').textContent = isDark ? '☀️' : '🌙'
+  document.getElementById('darkToggle').textContent = isDark ? 'SOMBRE' : 'CLAIR'
 }
 
 // Restore preference
 if(localStorage.getItem('dashboard_dark') === '1'){
   document.documentElement.classList.add('dark')
-  document.getElementById('darkToggle').textContent = '☀️'
+  document.getElementById('darkToggle').textContent = 'SOMBRE'
 }
 </script>
 
