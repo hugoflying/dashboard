@@ -1189,9 +1189,12 @@ function showDetail(key, btn){
 
   const vol = (f.__depFF || f.__arrFF || (f.Cie||"")+(f.NVol||"")).trim() || "--"
   const pRoute = [f.From||"", f.To||""].filter(Boolean).join(" → ")
-  titleEl.innerHTML = '<span style="font-weight:900;">' + vol + '</span>'
-    + (pRoute ? '<span style="font-size:.8rem;font-weight:700;color:var(--muted);margin:0 .4rem;">' + pRoute + '</span>' : '')
-    + (f.Parking ? '<span style="font-size:.8rem;font-weight:900;">P'+f.Parking+'</span>' : '')
+  const pCallsign = (f.Callsign||"").trim()
+  titleEl.innerHTML =
+    '<div style="font-size:1rem;font-weight:900;line-height:1.3;">'
+    + vol + (pCallsign ? ' <span style="color:var(--muted);font-size:.85rem;font-weight:700;">· ' + pCallsign + '</span>' : '')
+    + '</div>'
+    + (pRoute ? '<div style="font-size:.82rem;font-weight:700;color:var(--muted);margin-top:2px;">' + pRoute + '</div>' : '')
 
   const rows = [
     ["Avitair ARR", f.ArriveeFuel], ["1er débarqué", f.PremierDebarque],
