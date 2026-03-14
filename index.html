@@ -251,6 +251,17 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
 #cards.list-view .card-status-block{ display:none !important; }
 #cards.list-view .status-center{ display:flex !important; }
 #cards.list-view .header-line{ align-items:center !important; position:relative !important; }
+
+#cards .column{
+  transition: order 0.4s ease, transform 0.4s ease, opacity 0.3s ease;
+}
+#cards.animating .column{
+  opacity: 0;
+  transform: translateY(8px);
+}
+.dropdown{ position:relative; }
+.dropdown.is-active .dropdown-menu{ display:block; }
+.dropdown-menu{ display:none; position:absolute; z-index:999; padding-top:4px; }
 </style>
 </head>
 
@@ -263,14 +274,24 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
 
   <!-- Gauche : toggles -->
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-    <select id="sortSelect" onchange="changeSort(this.value)" class="button is-small is-light" style="font-weight:800;height:32px;padding:0 6px;cursor:pointer;">
-  <option value="EOBT">EOBT</option>
-  <option value="Parking">Parking</option>
-  <option value="SIBT">SIBT</option>
-  <option value="AIBT">AIBT</option>
-  <option value="SOBT">SOBT</option>
-  <option value="AOBT">AOBT</option>
-</select>
+    <div class="dropdown" id="sortDropdown">
+  <div class="dropdown-trigger">
+    <button class="button is-small is-light" style="font-weight:800;height:32px;" onclick="toggleSortDropdown()" aria-haspopup="true">
+      <span id="sortLabel">EOBT</span>
+      <span class="ml-1">▾</span>
+    </button>
+  </div>
+  <div class="dropdown-menu" style="min-width:100px;">
+    <div class="dropdown-content">
+      <a class="dropdown-item" onclick="changeSort('EOBT')">EOBT</a>
+      <a class="dropdown-item" onclick="changeSort('Parking')">Parking</a>
+      <a class="dropdown-item" onclick="changeSort('SIBT')">SIBT</a>
+      <a class="dropdown-item" onclick="changeSort('AIBT')">AIBT</a>
+      <a class="dropdown-item" onclick="changeSort('SOBT')">SOBT</a>
+      <a class="dropdown-item" onclick="changeSort('AOBT')">AOBT</a>
+    </div>
+  </div>
+</div>
 <button id="viewToggle" onclick="toggleView()" class="button is-small is-light" style="font-weight:800;height:32px;">≡</button>
 <button id="darkToggle" onclick="toggleDark()" class="button is-small is-light" style="font-weight:800;height:32px;">CLAIR</button>
     <button id="utcToggle" onclick="toggleUTC()" class="button is-small is-light" style="font-weight:800;height:32px;">LOCAL</button>
@@ -900,14 +921,31 @@ function delayColor(actualStr, plannedStr){
 function changeSort(val){
   sortBy = val
   localStorage.setItem('dashboard_sort', val)
-  render()
+  const lbl = document.getElementById('sortLabel')
+  if(lbl) lbl.textContent = val
+  document.getElementById('sortDropdown')?.classList.remove('is-active')
+  // Animation
+  const c = document.getElementById('cards')
+  if(c){ c.classList.add('animating'); setTimeout(()=>{ render(); c.classList.remove('animating'); }, 200); }
+  else render()
 }
+
+function toggleSortDropdown(){
+  document.getElementById('sortDropdown')?.classList.toggle('is-active')
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', e => {
+  const dd = document.getElementById('sortDropdown')
+  if(dd && !dd.contains(e.target)) dd.classList.remove('is-active')
+})
+
 
 // Restore sort preference
 if(localStorage.getItem('dashboard_sort')){
   sortBy = localStorage.getItem('dashboard_sort')
-  const sel = document.getElementById('sortSelect')
-  if(sel) sel.value = sortBy
+  const lbl = document.getElementById('sortLabel')
+  if(lbl) lbl.textContent = sortBy
 }
 function toggleView(){
   viewMode = viewMode === 'cards' ? 'list' : 'cards'
