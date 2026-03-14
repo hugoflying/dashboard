@@ -728,9 +728,9 @@ function render() {
                 ${f.Callsign ? `<div class="flight-subtitle">${f.Callsign}</div>` : ""}
                 <div class="flight-subtitle">${sub1}</div>
                 ${sub2 ? `<div class="flight-subtitle">${sub2}</div>` : ""}
-                ${stand ? `<div class="flight-subtitle" style="font-weight:900;color:var(--text);">${stand}</div>` : ""}
               </div>
-              <div style="flex-shrink:0;display:flex;align-items:center;gap:5px;">
+              <div style="flex-shrink:0;display:flex;align-items:center;gap:8px;">
+                ${stand ? `<div style="font-size:1.5rem;font-weight:900;color:var(--muted);line-height:1;">${stand}</div>` : ""}
                 <button class="dc-btn-i" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="scheduleHideDetail()">i</button>
               </div>
             </div>
@@ -768,7 +768,6 @@ function render() {
               ${f.Callsign ? `<div class="flight-subtitle" style="font-weight:700;">${f.Callsign}</div>` : ""}
               <div class="flight-subtitle">${sub1}</div>
               ${sub2 ? `<div class="flight-subtitle">${sub2}</div>` : ""}
-              ${stand ? `<div class="flight-subtitle" style="font-weight:900;color:var(--text);">${stand}</div>` : ""}
               <div style="margin-top:.25rem;"><span class="tag ${status.tagClass} is-small status-tag">${status.text}</span></div>
             </div>
             <div class="dc-center">
@@ -791,6 +790,7 @@ function render() {
                 return `<div class="kv-box" style="${s}"><div class="kv-k">AOBT</div><div class="kv-v" style="${t}">${convertTime(f.AOBT)||"--:--"}</div></div>`; })()}
             </div>
             <div class="dc-right">
+              ${stand ? `<div class="dc-stand" style="color:var(--muted);">${stand}</div>` : ""}
               <button class="dc-btn-i" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="scheduleHideDetail()">i</button>
             </div>
 
