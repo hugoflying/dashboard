@@ -280,45 +280,70 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
   .dashboard-card .card-content{ flex-wrap:wrap; }
 }
 
-/* === Dashboard card === */
-.dashboard-card .card-content{
-  display:flex;
-  align-items:center;
-  gap:.75rem;
-  padding:.55rem .8rem !important;
-}
-.dc-left{
-  flex:0 0 160px;
-  min-width:0;
-}
-.dc-center{
-  flex:1;
-  display:grid;
-  grid-template-columns:repeat(6,1fr);
-  gap:.35rem;
-  align-items:stretch;
-}
-.dc-right{
-  flex-shrink:0;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:4px;
-}
-.flight-title{ font-size:1rem; font-weight:900; line-height:1.2; }
-.flight-subtitle{ font-size:.7rem; color:var(--muted); line-height:1.3; }
-.status-tag{ font-size:.62rem !important; padding:.15rem .45rem !important; height:auto !important; white-space:normal; text-align:center; }
-.kv-box{ padding:.3rem .45rem !important; border-radius:8px; display:flex; flex-direction:column; justify-content:center; }
-.kv-k{ font-size:.58rem !important; font-weight:700; margin-bottom:2px; }
-.kv-v{ font-size:.95rem !important; font-weight:900; line-height:1; }
-.dc-stand{ font-size:1.1rem; font-weight:900; }
-.dc-btn{ background:none; border:none; cursor:pointer; padding:0; line-height:1; font-size:.85rem; color:var(--muted); }
-.dc-btn-i{ font-size:.7rem; font-weight:900; color:#3273dc; border:2px solid #3273dc; border-radius:50%; width:16px; height:16px; display:flex; align-items:center; justify-content:center; background:none; cursor:pointer; padding:0; line-height:1; }
-@media(max-width:700px){
-  .dc-center{ grid-template-columns:repeat(3,1fr); }
-  .dc-left{ flex:1 !important; }
+.dc-left{ flex:1 !important; }
   .dashboard-card .card-content{ flex-wrap:wrap; }
+}
+
+/* ===================== */
+/* VUE CARTES (défaut)   */
+/* ===================== */
+.dashboard-card .card-content{
+  padding: .85rem 1rem !important;
+}
+.dc-left{ display:none; }
+.dc-right{ display:none; }
+.dc-center{ display:none; }
+
+/* Header + statut + timings en mode carte */
+.card-header-line{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:.5rem;
+  margin-bottom:.5rem;
+}
+.card-info{ flex:1; min-width:0; }
+.card-actions{ flex-shrink:0; display:flex; align-items:center; gap:5px; }
+.card-status-wrap{ margin:.4rem 0; }
+.flight-title{ font-size:1.05rem; font-weight:900; line-height:1.2; }
+.flight-subtitle{ font-size:.72rem; color:var(--muted); line-height:1.3; }
+.status-tag{ font-size:.65rem !important; padding:.2rem .5rem !important; height:auto !important; }
+.kv-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:.4rem;
+}
+.kv-box{ padding:.38rem .5rem !important; border-radius:8px; }
+.kv-k{ font-size:.6rem !important; font-weight:700; margin-bottom:2px; }
+.kv-v{ font-size:1.1rem !important; font-weight:900; line-height:1.1; }
+@media(max-width:600px){
+  .kv-grid{ grid-template-columns:repeat(2,1fr); }
+}
+.dc-stand{ font-size:1.3rem; font-weight:900; }
+.dc-btn{ background:none; border:none; cursor:pointer; padding:0; line-height:1; font-size:.9rem; color:var(--muted); }
+.dc-btn-i{ font-size:.68rem; font-weight:900; color:#3273dc; border:2px solid #3273dc; border-radius:50%; width:16px; height:16px; display:flex; align-items:center; justify-content:center; background:none; cursor:pointer; padding:0; }
+
+/* ===================== */
+/* VUE LISTE             */
+/* ===================== */
+#cards.list-view .column{ padding:.2rem 0 !important; }
+#cards.list-view .dashboard-card .card-content{
+  display:flex !important;
+  align-items:center !important;
+  padding:.45rem .8rem !important;
+  gap:.75rem !important;
+}
+#cards.list-view .card-header-line{ display:none !important; }
+#cards.list-view .card-status-wrap{ display:none !important; }
+#cards.list-view .kv-grid{ display:none !important; }
+#cards.list-view .dc-left{ display:flex !important; flex-direction:column; justify-content:center; flex:0 0 190px; min-width:0; }
+#cards.list-view .dc-center{ display:grid !important; grid-template-columns:repeat(6,1fr); gap:.3rem; flex:1; }
+#cards.list-view .dc-right{ display:flex !important; flex-direction:column; align-items:center; gap:3px; flex-shrink:0; }
+#cards.list-view .kv-box{ padding:.28rem .4rem !important; }
+#cards.list-view .kv-k{ font-size:.57rem !important; }
+#cards.list-view .kv-v{ font-size:.88rem !important; }
+@media(max-width:800px){
+  #cards.list-view .dc-center{ grid-template-columns:repeat(3,1fr) !important; }
 }
 </style>
 </head>
@@ -581,46 +606,70 @@ function render() {
         <div class="card dashboard-card">
           <div class="card-content">
 
+            <!-- MODE CARTE -->
+            <div class="card-header-line">
+              <div class="card-info">
+                <div class="flight-title">${arrVol}</div>
+                ${f.Callsign ? `<div class="flight-subtitle" style="font-weight:700;">${f.Callsign}</div>` : ""}
+                <div class="flight-subtitle">${sub1}</div>
+                ${sub2 ? `<div class="flight-subtitle">${sub2}</div>` : ""}
+              </div>
+              <div class="card-actions">
+                ${stand ? `<div class="dc-stand">${stand}</div>` : ""}
+                <button class="dc-btn-i" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="scheduleHideDetail()">i</button>
+                <button class="dc-btn" onclick="deleteFlight('${f.flightKey}')" title="Fermer">✕</button>
+              </div>
+            </div>
+            <div class="card-status-wrap">
+              <span class="tag ${status.tagClass} is-small status-tag">${status.text}</span>
+            </div>
+            <div class="kv-grid">
+              <div class="kv-box" style="background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);">
+                <div class="kv-k">SIBT</div><div class="kv-v">${convertTime(f.SIBT)||"--:--"}</div>
+              </div>
+              ${(()=>{ const c=delayColor(f.AIBT,f.SIBT); const s=c?`background:${c.bg};border-color:${c.border};`:''; const t=c?`color:${c.text};`:'';
+                return `<div class="kv-box" style="${s}"><div class="kv-k">AIBT</div><div class="kv-v" style="${t}">${convertTime(f.AIBT)||"--:--"}</div></div>`; })()}
+              <div class="kv-box" style="background:#16a34a;border-color:#16a34a;">
+                <div class="kv-k" style="color:rgba(255,255,255,.75);">EOBT</div><div class="kv-v" style="color:#fff;">${eobtStr}</div>
+              </div>
+              <div class="kv-box" style="${cd.over?'background:#fee2e2;border-color:#fca5a5;':'background:#93c5fd;border-color:#93c5fd;'}">
+                <div class="kv-k" style="${cd.over?'color:#ef4444;':'color:rgba(0,0,0,.55);'}">COUNTDOWN</div>
+                <div class="kv-v" style="${cd.over?'color:#ef4444;':'color:#111;'}">${cd.text}</div>
+              </div>
+              <div class="kv-box" style="background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);">
+                <div class="kv-k">SOBT</div><div class="kv-v">${convertTime(f.SOBT)||"--:--"}</div>
+              </div>
+              ${(()=>{ const c=delayColor(f.AOBT,f.SOBT); const s=c?`background:${c.bg};border-color:${c.border};`:''; const t=c?`color:${c.text};`:'';
+                return `<div class="kv-box" style="${s}"><div class="kv-k">AOBT</div><div class="kv-v" style="${t}">${convertTime(f.AOBT)||"--:--"}</div></div>`; })()}
+            </div>
+
+            <!-- MODE LISTE -->
             <div class="dc-left">
               <div class="flight-title">${arrVol}</div>
               ${f.Callsign ? `<div class="flight-subtitle" style="font-weight:700;">${f.Callsign}</div>` : ""}
               <div class="flight-subtitle">${sub1}</div>
               ${sub2 ? `<div class="flight-subtitle">${sub2}</div>` : ""}
-              <div style="margin-top:.35rem;">
-                <span class="tag ${status.tagClass} is-small status-tag">${status.text}</span>
-              </div>
+              <div style="margin-top:.25rem;"><span class="tag ${status.tagClass} is-small status-tag">${status.text}</span></div>
             </div>
-
             <div class="dc-center">
-
               <div class="kv-box" style="background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);">
-                <div class="kv-k">SIBT</div>
-                <div class="kv-v">${convertTime(f.SIBT) || "--:--"}</div>
+                <div class="kv-k">SIBT</div><div class="kv-v">${convertTime(f.SIBT)||"--:--"}</div>
               </div>
-
               ${(()=>{ const c=delayColor(f.AIBT,f.SIBT); const s=c?`background:${c.bg};border-color:${c.border};`:''; const t=c?`color:${c.text};`:'';
                 return `<div class="kv-box" style="${s}"><div class="kv-k">AIBT</div><div class="kv-v" style="${t}">${convertTime(f.AIBT)||"--:--"}</div></div>`; })()}
-
               <div class="kv-box" style="background:#16a34a;border-color:#16a34a;">
-                <div class="kv-k" style="color:rgba(255,255,255,.75);">EOBT</div>
-                <div class="kv-v" style="color:#fff;">${eobtStr}</div>
+                <div class="kv-k" style="color:rgba(255,255,255,.75);">EOBT</div><div class="kv-v" style="color:#fff;">${eobtStr}</div>
               </div>
-
               <div class="kv-box" style="${cd.over?'background:#fee2e2;border-color:#fca5a5;':'background:#93c5fd;border-color:#93c5fd;'}">
                 <div class="kv-k" style="${cd.over?'color:#ef4444;':'color:rgba(0,0,0,.55);'}">COUNTDOWN</div>
                 <div class="kv-v" style="${cd.over?'color:#ef4444;':'color:#111;'}">${cd.text}</div>
               </div>
-
               <div class="kv-box" style="background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);">
-                <div class="kv-k">SOBT</div>
-                <div class="kv-v">${convertTime(f.SOBT) || "--:--"}</div>
+                <div class="kv-k">SOBT</div><div class="kv-v">${convertTime(f.SOBT)||"--:--"}</div>
               </div>
-
               ${(()=>{ const c=delayColor(f.AOBT,f.SOBT); const s=c?`background:${c.bg};border-color:${c.border};`:''; const t=c?`color:${c.text};`:'';
                 return `<div class="kv-box" style="${s}"><div class="kv-k">AOBT</div><div class="kv-v" style="${t}">${convertTime(f.AOBT)||"--:--"}</div></div>`; })()}
-
             </div>
-
             <div class="dc-right">
               ${stand ? `<div class="dc-stand">${stand}</div>` : ""}
               <button class="dc-btn" onclick="deleteFlight('${f.flightKey}')" title="Fermer">✕</button>
