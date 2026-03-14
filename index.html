@@ -231,18 +231,10 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
 
 }
 
-.status-center{ display:none; position:absolute; left:50%; transform:translateX(-50%); justify-content:center; align-items:center; }
-#cards.list-view .card-status-block{ display:none !important; }
-#cards.list-view .status-center{ display:flex !important; }
-#cards.list-view .header-line{ align-items:center !important; position:relative !important; }
 
-#cards .column{
-  transition: order 0.4s ease, transform 0.4s ease, opacity 0.3s ease;
+
 }
-#cards.animating .column{
-  opacity: 0;
-  transform: translateY(8px);
-}
+
 .dropdown{ position:relative; }
 .dropdown.is-active .dropdown-menu{ display:block; }
 .dropdown-menu{ display:none; position:absolute; z-index:999; padding-top:4px; }
@@ -278,47 +270,54 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
 .detail-log-time.empty{ color:var(--muted); font-weight:400; }
 
 
-  #cards.list-view .header-line{ flex:1 !important; }
-  #cards.list-view .kv-grid{ grid-template-columns:repeat(3,1fr) !important; }
+  
 }
 
 
 
-/* === Dashboard compact === */
+
+  
+  .dashboard-card .card-content{ flex-wrap:wrap; }
+}
+
+/* === Dashboard card === */
 .dashboard-card .card-content{
   display:flex;
   align-items:center;
-  gap:.9rem;
-  padding:.6rem .9rem !important;
+  gap:.75rem;
+  padding:.55rem .8rem !important;
 }
-.card-left{
-  flex:0 0 180px;
+.dc-left{
+  flex:0 0 160px;
   min-width:0;
 }
-.card-middle{
+.dc-center{
   flex:1;
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:.35rem;
+  align-items:stretch;
 }
-.card-right{
+.dc-right{
   flex-shrink:0;
   display:flex;
   flex-direction:column;
-  align-items:flex-end;
-  gap:3px;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
 }
-.flight-title{ font-size:1.05rem; font-weight:900; }
-.flight-subtitle{ font-size:.72rem; color:var(--muted); }
-.kv-grid{
-  display:grid !important;
-  grid-template-columns:repeat(6,1fr) !important;
-  gap:.35rem !important;
-}
-.kv-box{ padding:.3rem .5rem !important; }
-.kv-k{ font-size:.6rem !important; }
-.kv-v{ font-size:.95rem !important; }
-.status-tag{ font-size:.65rem !important; padding:.2rem .5rem !important; height:auto !important; }
+.flight-title{ font-size:1rem; font-weight:900; line-height:1.2; }
+.flight-subtitle{ font-size:.7rem; color:var(--muted); line-height:1.3; }
+.status-tag{ font-size:.62rem !important; padding:.15rem .45rem !important; height:auto !important; white-space:normal; text-align:center; }
+.kv-box{ padding:.3rem .45rem !important; border-radius:8px; display:flex; flex-direction:column; justify-content:center; }
+.kv-k{ font-size:.58rem !important; font-weight:700; margin-bottom:2px; }
+.kv-v{ font-size:.95rem !important; font-weight:900; line-height:1; }
+.dc-stand{ font-size:1.1rem; font-weight:900; }
+.dc-btn{ background:none; border:none; cursor:pointer; padding:0; line-height:1; font-size:.85rem; color:var(--muted); }
+.dc-btn-i{ font-size:.7rem; font-weight:900; color:#3273dc; border:2px solid #3273dc; border-radius:50%; width:16px; height:16px; display:flex; align-items:center; justify-content:center; background:none; cursor:pointer; padding:0; line-height:1; }
 @media(max-width:700px){
-  .kv-grid{ grid-template-columns:repeat(3,1fr) !important; }
-  .card-left{ flex:1 !important; }
+  .dc-center{ grid-template-columns:repeat(3,1fr); }
+  .dc-left{ flex:1 !important; }
   .dashboard-card .card-content{ flex-wrap:wrap; }
 }
 </style>
@@ -383,7 +382,7 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
   <div class="legend-item"><div class="legend-dot" style="background:#fee2e2;border:1.5px solid #ef4444;"></div><span id="leg-verylate">Retard &ge; 15 min</span></div>
 </div>
 
-<div id="detailPopup" onmouseleave="scheduleHideDetail()" onmouseenter="clearTimeout(_detailHideTimer)"><div class="detail-title" id="detailTitle">—</div><div id="detailContent"></div></div>
+<div id="detailPopup" onmouseleave="scheduleHideDetail()" onmouseenter="clearTimeout(_detailHideTimer)" style="pointer-events:auto;"><div class="detail-title" id="detailTitle">—</div><div id="detailContent"></div></div>
 </section>
 
 <script>
@@ -582,50 +581,34 @@ function render() {
         <div class="card dashboard-card">
           <div class="card-content">
 
-            <div class="header-line">
-              <div style="flex:1;min-width:0;">
-                <div class="flight-title">${arrVol}</div>
-                ${f.Callsign ? `<div style="font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.03em;">${f.Callsign}</div>` : ""}
-                <div class="flight-subtitle">${sub1}</div>
-                ${sub2 ? `<div class="flight-subtitle">${sub2}</div>` : ""}
-              </div>
-              <div class="status-center">
-                <span class="tag ${status.tagClass} is-medium status-tag">${status.text}</span>
-              </div>
-              <div style="flex-shrink:0;display:flex;align-items:center;gap:6px;">
-                ${stand ? `<div style="font-size:1.5rem;font-weight:900;line-height:1;">${stand}</div>` : ""}
-                  <button class="close-btn" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="scheduleHideDetail()" style="font-size:.75rem;font-weight:900;color:#3273dc;border:2px solid #3273dc;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;cursor:pointer;">i</button>
-                <button class="close-btn" onclick="deleteFlight('${f.flightKey}')" title="Fermer" style="align-self:flex-start;">✕</button>
+            <div class="dc-left">
+              <div class="flight-title">${arrVol}</div>
+              ${f.Callsign ? `<div class="flight-subtitle" style="font-weight:700;">${f.Callsign}</div>` : ""}
+              <div class="flight-subtitle">${sub1}</div>
+              ${sub2 ? `<div class="flight-subtitle">${sub2}</div>` : ""}
+              <div style="margin-top:.35rem;">
+                <span class="tag ${status.tagClass} is-small status-tag">${status.text}</span>
               </div>
             </div>
 
-
-
-            <div class="kv-grid">
+            <div class="dc-center">
 
               <div class="kv-box" style="background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);">
                 <div class="kv-k">SIBT</div>
                 <div class="kv-v">${convertTime(f.SIBT) || "--:--"}</div>
               </div>
 
-              ${(()=>{
-                const c = delayColor(f.AIBT, f.SIBT);
-                const s = c ? `background:${c.bg};border-color:${c.border};` : '';
-                const t = c ? `color:${c.text};` : '';
-                return `<div class="kv-box" style="${s}">
-                  <div class="kv-k">AIBT</div>
-                  <div class="kv-v" style="${t}">${convertTime(f.AIBT) || "--:--"}</div>
-                </div>`;
-              })()}
+              ${(()=>{ const c=delayColor(f.AIBT,f.SIBT); const s=c?`background:${c.bg};border-color:${c.border};`:''; const t=c?`color:${c.text};`:'';
+                return `<div class="kv-box" style="${s}"><div class="kv-k">AIBT</div><div class="kv-v" style="${t}">${convertTime(f.AIBT)||"--:--"}</div></div>`; })()}
 
               <div class="kv-box" style="background:#16a34a;border-color:#16a34a;">
                 <div class="kv-k" style="color:rgba(255,255,255,.75);">EOBT</div>
                 <div class="kv-v" style="color:#fff;">${eobtStr}</div>
               </div>
 
-              <div class="kv-box" style="${cd.over ? 'background:#fee2e2;border-color:#fca5a5;' : 'background:#93c5fd;border-color:#93c5fd;'}">
-                <div class="kv-k" style="${cd.over ? 'color:#ef4444;' : 'color:rgba(0,0,0,.55);'}">COUNTDOWN</div>
-                <div class="kv-v" style="${cd.over ? 'color:#ef4444;' : 'color:#111;'}">${cd.text}</div>
+              <div class="kv-box" style="${cd.over?'background:#fee2e2;border-color:#fca5a5;':'background:#93c5fd;border-color:#93c5fd;'}">
+                <div class="kv-k" style="${cd.over?'color:#ef4444;':'color:rgba(0,0,0,.55);'}">COUNTDOWN</div>
+                <div class="kv-v" style="${cd.over?'color:#ef4444;':'color:#111;'}">${cd.text}</div>
               </div>
 
               <div class="kv-box" style="background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);">
@@ -633,22 +616,15 @@ function render() {
                 <div class="kv-v">${convertTime(f.SOBT) || "--:--"}</div>
               </div>
 
-              ${(()=>{
-                const c = delayColor(f.AOBT, f.SOBT);
-                const s = c ? `background:${c.bg};border-color:${c.border};` : '';
-                const t = c ? `color:${c.text};` : '';
-                return `<div class="kv-box" style="${s}">
-                  <div class="kv-k">AOBT</div>
-                  <div class="kv-v" style="${t}">${convertTime(f.AOBT) || "--:--"}</div>
-                </div>`;
-              })()}
+              ${(()=>{ const c=delayColor(f.AOBT,f.SOBT); const s=c?`background:${c.bg};border-color:${c.border};`:''; const t=c?`color:${c.text};`:'';
+                return `<div class="kv-box" style="${s}"><div class="kv-k">AOBT</div><div class="kv-v" style="${t}">${convertTime(f.AOBT)||"--:--"}</div></div>`; })()}
 
             </div>
-            <!-- Droite : stand + boutons -->
-            <div class="card-right">
-              ${stand ? `<div style="font-size:1.5rem;font-weight:900;line-height:1;">${stand}</div>` : ""}
-              <button class="close-btn" onclick="deleteFlight('${f.flightKey}')" title="Fermer">✕</button>
-              <button class="close-btn" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="scheduleHideDetail()" style="font-size:.75rem;font-weight:900;color:#3273dc;border:2px solid #3273dc;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;cursor:pointer;">i</button>
+
+            <div class="dc-right">
+              ${stand ? `<div class="dc-stand">${stand}</div>` : ""}
+              <button class="dc-btn" onclick="deleteFlight('${f.flightKey}')" title="Fermer">✕</button>
+              <button class="dc-btn-i" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="scheduleHideDetail()">i</button>
             </div>
 
           </div>
