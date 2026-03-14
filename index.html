@@ -464,6 +464,17 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
 }
 .delay-bar-left{ left: 0; }
 .delay-bar-right{ right: 0; }
+
+/* === Grid view optimized === */
+.dashboard-card .card-content{ padding:.75rem !important; }
+.flight-title{ font-size:1.1rem !important; }
+.flight-subtitle{ font-size:.7rem !important; margin-top:2px !important; }
+.kv-grid{ gap:.45rem !important; margin-top:.5rem !important; margin-bottom:.5rem !important; }
+.kv-box{ padding:.55rem .65rem !important; }
+.kv-k{ font-size:.65rem !important; margin-bottom:.15rem !important; }
+.kv-v{ font-size:1.1rem !important; }
+.mt-3.mb-3{ margin:.35rem 0 !important; }
+.status-tag{ font-size:.65rem !important; padding:.2rem .55rem !important; }
 </style>
 </head>
 
@@ -747,20 +758,21 @@ function render() {
             <!-- CARTE MODE -->
             <div class="header-line">
               <div style="flex:1;min-width:0;">
-                <div class="flight-title">${arrVol}</div>
+                <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+                  <div class="flight-title">${arrVol}</div>
+                  <span class="tag ${status.tagClass} is-small status-tag">${status.text}</span>
+                </div>
                 ${f.Callsign ? `<div class="flight-subtitle">${f.Callsign}</div>` : ""}
                 <div class="flight-subtitle">${sub1}</div>
                 ${sub2 ? `<div class="flight-subtitle">${sub2}</div>` : ""}
               </div>
-              <div style="flex-shrink:0;display:flex;align-items:center;gap:8px;">
-                ${stand ? `<div style="font-size:1.5rem;font-weight:900;color:var(--muted);line-height:1;">${stand}</div>` : ""}
+              <div style="flex-shrink:0;display:flex;align-items:flex-start;gap:8px;">
+                ${stand ? `<div style="font-size:1.3rem;font-weight:900;color:var(--muted);line-height:1;margin-top:2px;">${stand}</div>` : ""}
                 <button class="dc-btn-i" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="setTimeout(closeDetail, 200)">i</button>
               </div>
             </div>
 
-            <div class="mt-3 mb-3">
-              <span class="tag ${status.tagClass} is-medium status-tag">${status.text}</span>
-            </div>
+
 
             <div class="kv-grid">
               <div class="kv-box" style="background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);">
