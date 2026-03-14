@@ -764,10 +764,7 @@ function render() {
                 <div class="flight-subtitle">${sub1}</div>
                 ${sub2 ? `<div class="flight-subtitle">${sub2}</div>` : ""}
               </div>
-              <!-- Status centré absolument sur la ligne du header -->
-              <div style="position:absolute;left:50%;transform:translateX(-50%);pointer-events:none;">
-                <span class="tag ${status.tagClass} is-small status-tag">${status.text}</span>
-              </div>
+
               <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:5px;">
                 ${stand ? `<div style="font-size:1.3rem;font-weight:900;color:var(--muted);line-height:1;">${stand}</div>` : ""}
                 <button class="dc-btn-i" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="setTimeout(closeDetail, 200)">i</button>
@@ -777,6 +774,9 @@ function render() {
 
 
 
+            <div style="text-align:center;margin:.5rem 0;">
+              <span class="tag ${status.tagClass} is-medium status-tag">${status.text}</span>
+            </div>
             <div class="kv-grid">
               <div class="kv-box" style="background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);">
                 <div class="kv-k">SIBT</div>
