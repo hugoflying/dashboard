@@ -574,7 +574,7 @@ function render() {
 
   if (!active.length) {
     cards.innerHTML = `
-      <div class="column is-12">
+      <div class="column is-4-desktop is-6-tablet is-12-mobile">
         <div class="empty-box" id="emptyBox">
           ${lang === "EN" ? "No flight in progress" : "Aucun vol en cours de traitement"}
         </div>
@@ -602,7 +602,7 @@ function render() {
     const sub2    = [immat, actype].filter(Boolean).join(" · ");
 
     return `
-      <div class="column is-12">
+      <div class="column is-4-desktop is-6-tablet is-12-mobile">
         <div class="card dashboard-card">
           <div class="card-content">
 
