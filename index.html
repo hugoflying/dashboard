@@ -246,6 +246,7 @@ html.dark .dropdown-item{ color:#f3f4f6 !important; }
 html.dark .dropdown-item:hover{ background:rgba(255,255,255,.08); }
 
 #detailPopup{
+  transition: opacity .25s ease, transform .2s ease;
   display:none;
   position:fixed;
   z-index:9000;
@@ -731,7 +732,7 @@ function render() {
               </div>
               <div style="flex-shrink:0;display:flex;align-items:center;gap:8px;">
                 ${stand ? `<div style="font-size:1.5rem;font-weight:900;color:var(--muted);line-height:1;">${stand}</div>` : ""}
-                <button class="dc-btn-i" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="closeDetail()">i</button>
+                <button class="dc-btn-i" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="setTimeout(closeDetail, 200)">i</button>
               </div>
             </div>
 
@@ -791,7 +792,7 @@ function render() {
             </div>
             <div class="dc-right">
               ${stand ? `<div class="dc-stand" style="color:var(--muted);">${stand}</div>` : ""}
-              <button class="dc-btn-i" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="closeDetail()">i</button>
+              <button class="dc-btn-i" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="setTimeout(closeDetail, 200)">i</button>
             </div>
 
           </div>
@@ -1247,7 +1248,10 @@ document._detailMoveClose = function(e){
 
 function closeDetail(){
   const p = document.getElementById('detailPopup')
-  if(p) p.style.display = "none"
+  if(!p) return
+  p.style.opacity = '0'
+  p.style.transform = 'translateY(4px)'
+  setTimeout(() => { p.style.display = 'none'; p.style.opacity=''; p.style.transform=''; }, 250)
 }
 
 let _pendingDeleteKey = null
