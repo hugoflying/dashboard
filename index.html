@@ -225,6 +225,23 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
 }
 .legend-item{ display:flex;align-items:center;gap:6px; }
 .legend-dot{ width:12px;height:12px;border-radius:4px;flex-shrink:0; }
+
+/* Vue liste */
+#cards.list-view{ display:block !important; }
+#cards.list-view .column{ width:100% !important; padding:.25rem 0 !important; }
+#cards.list-view .dashboard-card{ border-radius:10px; }
+#cards.list-view .dashboard-card .card-content{ padding:.6rem 1rem !important; }
+#cards.list-view .kv-grid{ grid-template-columns:repeat(6,1fr) !important; gap:.4rem !important; }
+#cards.list-view .kv-box{ padding:.4rem .5rem !important; }
+#cards.list-view .kv-k{ font-size:.62rem !important; }
+#cards.list-view .kv-v{ font-size:.9rem !important; }
+#cards.list-view .flight-title{ font-size:1rem !important; }
+#cards.list-view .flight-subtitle{ font-size:.75rem !important; }
+#cards.list-view .mt-3.mb-3{ margin:.3rem 0 !important; }
+#cards.list-view .header-line{ margin-bottom:.2rem !important; }
+@media(max-width:600px){
+  #cards.list-view .kv-grid{ grid-template-columns:repeat(3,1fr) !important; }
+}
 </style>
 </head>
 
@@ -237,7 +254,8 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
 
   <!-- Gauche : toggles -->
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-    <button id="darkToggle" onclick="toggleDark()" class="button is-small is-light" style="font-weight:800;height:32px;">CLAIR</button>
+    <button id="viewToggle" onclick="toggleView()" class="button is-small is-light" style="font-weight:800;height:32px;">≡</button>
+<button id="darkToggle" onclick="toggleDark()" class="button is-small is-light" style="font-weight:800;height:32px;">CLAIR</button>
     <button id="utcToggle" onclick="toggleUTC()" class="button is-small is-light" style="font-weight:800;height:32px;">LOCAL</button>
     <button id="langToggle" onclick="toggleLang()" class="button is-small is-light" style="font-weight:800;height:32px;">FR</button>
   </div>
@@ -276,6 +294,7 @@ const WS_URL="wss://turnaround-sync.deruellehugo-49c.workers.dev/dashboard"
 let socket=null
 let reconnectTimer=null
 let isUTC = localStorage.getItem('dashboard_utc') === '1'
+let viewMode = localStorage.getItem('dashboard_view') || 'cards'
 let lang  = localStorage.getItem('dashboard_lang') || 'FR'
 const flights=new Map()
 
@@ -704,6 +723,7 @@ render()
 
 setInterval(()=>{
   render()
+  applyViewMode()
   if(!manuallyDisconnected && socket && socket.readyState === WebSocket.OPEN){
     document.getElementById("lastUpdate").textContent =
       (lang === "EN" ? "Upd: " : "Maj : ") + new Date().toLocaleTimeString("fr-FR")
@@ -848,6 +868,27 @@ function delayColor(actualStr, plannedStr){
   if(diff < 15)  return { bg:'#ffedd5', border:'#f97316', text:'#c2410c' }; // orange - retard < 15
   return           { bg:'#fee2e2', border:'#ef4444', text:'#b91c1c' };     // rouge - retard >= 15
 }
+
+function toggleView(){
+  viewMode = viewMode === 'cards' ? 'list' : 'cards'
+  localStorage.setItem('dashboard_view', viewMode)
+  applyViewMode()
+}
+
+function applyViewMode(){
+  const cards = document.getElementById('cards')
+  const btn = document.getElementById('viewToggle')
+  if(viewMode === 'list'){
+    cards.classList.add('list-view')
+    if(btn) btn.textContent = '⊞'
+  } else {
+    cards.classList.remove('list-view')
+    if(btn) btn.textContent = '≡'
+  }
+}
+
+// Restore view preference
+applyViewMode()
 </script>
 
 </body>
