@@ -71,7 +71,7 @@ color:var(--muted);
 
 .kv-grid{
 display:grid;
-grid-template-columns:repeat(3,1fr);
+grid-template-columns:repeat(6,1fr);
 gap:.75rem;
 margin-top:.75rem;
 margin-bottom:.9rem;
@@ -572,7 +572,7 @@ function render() {
     const sub2    = [immat, actype].filter(Boolean).join(" · ");
 
     return `
-      <div class="column is-4-desktop is-6-tablet is-12-mobile">
+      <div class="column is-12">
         <div class="card dashboard-card">
           <div class="card-content">
 
