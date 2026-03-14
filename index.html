@@ -435,8 +435,8 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
   gap:3px;
   flex-shrink:0;
 }
-#cards.list-view .dc-left .flight-title{font-size:1rem !important;}
-#cards.list-view .dc-left .flight-subtitle{font-size:.7rem !important;}
+#cards.list-view .dc-left .flight-title{font-size:1.35rem !important;}
+#cards.list-view .dc-left .flight-subtitle{font-size:.72rem !important; font-weight:700;}
 #cards.list-view .kv-box{padding:.6rem .8rem !important;}
 #cards.list-view .kv-k{font-size:.68rem !important;}
 #cards.list-view .kv-v{font-size:1.25rem !important;}
@@ -444,6 +444,22 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
 .dc-btn{background:none;border:none;cursor:pointer;padding:0;line-height:1;font-size:.9rem;color:var(--muted);}
 .dc-btn-i{font-size:.68rem;font-weight:900;color:#3273dc;border:2px solid #3273dc;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;background:none;cursor:pointer;padding:0;}
 @media(max-width:800px){ #cards.list-view .dc-center{grid-template-columns:repeat(3,1fr) !important;} }
+
+#cards.list-view .dashboard-card .card-content{
+  flex-wrap: wrap !important;
+  align-items: center !important;
+}
+.dc-status{ display:none; }
+#cards.list-view .dc-left{ align-self:center; }
+#cards.list-view .dc-status{
+  display:flex !important;
+  width:100% !important;
+  order:10 !important;
+  padding:.3rem 0 .1rem 0 !important;
+}
+#cards.list-view .dc-center{ order:5; }
+#cards.list-view .dc-right{ order:6; align-self:center; }
+#cards.list-view .dc-left{ order:1; }
 </style>
 </head>
 
@@ -753,7 +769,6 @@ function render() {
               ${f.Callsign ? `<div class="flight-subtitle" style="font-weight:700;">${f.Callsign}</div>` : ""}
               <div class="flight-subtitle">${sub1}</div>
               ${sub2 ? `<div class="flight-subtitle">${sub2}</div>` : ""}
-              <div style="margin-top:.25rem;"><span class="tag ${status.tagClass} is-small status-tag">${status.text}</span></div>
             </div>
             <div class="dc-center">
               <div class="kv-box" style="background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);">
@@ -773,6 +788,9 @@ function render() {
               </div>
               ${(()=>{ const c=delayColor(f.AOBT,f.SOBT); const s=c?`background:${c.bg};border-color:${c.border};`:''; const t=c?`color:${c.text};`:'';
                 return `<div class="kv-box" style="${s}"><div class="kv-k">AOBT</div><div class="kv-v" style="${t}">${convertTime(f.AOBT)||"--:--"}</div></div>`; })()}
+            </div>
+            <div class="dc-status">
+              <span class="tag ${status.tagClass} is-medium status-tag">${status.text}</span>
             </div>
             <div class="dc-right">
               ${stand ? `<div class="dc-stand">${stand}</div>` : ""}
