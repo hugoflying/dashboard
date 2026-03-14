@@ -509,7 +509,7 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
   <div class="legend-item"><div class="legend-dot" style="background:#fee2e2;border:1.5px solid #ef4444;"></div><span id="leg-verylate">Retard &ge; 15 min</span></div>
 </div>
 
-<div id="detailPopup" onmouseleave="scheduleHideDetail()" onmouseenter="clearTimeout(_detailHideTimer)" style="pointer-events:auto;"><div class="detail-title" id="detailTitle">—</div><div id="detailContent"></div></div>
+<div id="detailPopup" onmouseleave="scheduleHideDetail()" onmouseenter="clearTimeout(_detailHideTimer)"><div class="detail-title" id="detailTitle">—</div><div id="detailContent"></div></div>
 
 <div id="deleteModal" style="display:none;position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;">
   <div onclick="closeDeleteModal()" style="position:absolute;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(2px);"></div>
@@ -1225,10 +1225,24 @@ function showDetail(key, btn){
   if(top + 500 > window.innerHeight) top = rect.top - popup.offsetHeight - 8
   popup.style.top = top + "px"
   popup.style.left = left + "px"
+  setTimeout(()=> document.addEventListener('mousemove', document._detailMoveClose), 200)
 }
 
 function scheduleHideDetail(){
-  _detailHideTimer = setTimeout(closeDetail, 300)
+  _detailHideTimer = setTimeout(closeDetail, 150)
+}
+
+// Ferme le popup si la souris est loin
+document._detailMoveClose = function(e){
+  const p = document.getElementById('detailPopup')
+  if(!p || p.style.display==='none') return
+  const r = p.getBoundingClientRect()
+  const margin = 40
+  if(e.clientX < r.left-margin || e.clientX > r.right+margin ||
+     e.clientY < r.top-margin  || e.clientY > r.bottom+margin){
+    closeDetail()
+    document.removeEventListener('mousemove', document._detailMoveClose)
+  }
 }
 
 function closeDetail(){
