@@ -468,7 +468,7 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
 /* === Grid view optimized === */
 .dashboard-card .card-content{ padding:.75rem !important; }
 .flight-title{ font-size:1.35rem !important; }
-.flight-subtitle{ font-size:.75rem !important; margin-top:3px !important; }
+.flight-subtitle{ font-size:.82rem !important; margin-top:3px !important; }
 .kv-grid{ gap:.45rem !important; margin-top:.5rem !important; margin-bottom:.5rem !important; }
 .kv-box{ padding:.55rem .65rem !important; }
 .kv-k{ font-size:.65rem !important; margin-bottom:.15rem !important; }
@@ -749,7 +749,8 @@ function render() {
         <div class="card dashboard-card" ondblclick="confirmDelete('${f.flightKey}')" style="cursor:pointer;">
           ${(()=>{
             const arrC = delayColor(f.AIBT, f.SIBT)
-            const depC = delayColor(f.AOBT, f.SOBT)
+            const eobtForDelay = eobtMins != null ? fmtHHMM(eobtMins) : f.SOBT
+            const depC = delayColor(f.AOBT, eobtForDelay)
             return (arrC ? `<div class="delay-bar-left" style="background:${arrC.border};"></div>` : '')
                  + (depC ? `<div class="delay-bar-right" style="background:${depC.border};"></div>` : '')
           })()}
@@ -758,10 +759,7 @@ function render() {
             <!-- CARTE MODE -->
             <div class="header-line">
               <div style="flex:1;min-width:0;">
-                <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
-                  <div class="flight-title">${arrVol}</div>
-                  <span class="tag ${status.tagClass} is-small status-tag">${status.text}</span>
-                </div>
+                <div class="flight-title">${arrVol}</div>
                 ${f.Callsign ? `<div class="flight-subtitle">${f.Callsign}</div>` : ""}
                 <div class="flight-subtitle">${sub1}</div>
                 ${sub2 ? `<div class="flight-subtitle">${sub2}</div>` : ""}
@@ -774,6 +772,9 @@ function render() {
 
 
 
+            <div style="text-align:center;margin:.4rem 0;">
+              <span class="tag ${status.tagClass} is-medium status-tag">${status.text}</span>
+            </div>
             <div class="kv-grid">
               <div class="kv-box" style="background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);">
                 <div class="kv-k">SIBT</div>
