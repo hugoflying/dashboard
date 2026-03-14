@@ -511,20 +511,16 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
 
 <div id="detailPopup" onmouseleave="scheduleHideDetail()" onmouseenter="clearTimeout(_detailHideTimer)" style="pointer-events:auto;"><div class="detail-title" id="detailTitle">—</div><div id="detailContent"></div></div>
 
-<div id="deleteModal" class="modal">
-  <div class="modal-background" onclick="closeDeleteModal()"></div>
-  <div class="modal-card">
-    <header class="modal-card-head">
-      <p class="modal-card-title" id="deleteModalTitle">Supprimer le vol</p>
-      <button class="delete" onclick="closeDeleteModal()"></button>
-    </header>
-    <section class="modal-card-body">
-      <p id="deleteModalBody">Voulez-vous supprimer ce vol du dashboard ?</p>
-    </section>
-    <footer class="modal-card-foot">
-      <button class="button is-danger" id="deleteModalConfirm" onclick="confirmDeleteOK()">Supprimer</button>
-      <button class="button" onclick="closeDeleteModal()">Annuler</button>
-    </footer>
+<div id="deleteModal" style="display:none;position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;">
+  <div onclick="closeDeleteModal()" style="position:absolute;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(2px);"></div>
+  <div style="position:relative;background:var(--card);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.2);padding:1.75rem 2rem;width:min(380px,calc(100vw - 32px));text-align:center;">
+    <div style="font-size:2rem;margin-bottom:.5rem;">✕</div>
+    <div style="font-size:1.1rem;font-weight:900;margin-bottom:.4rem;" id="deleteModalTitle">Supprimer le vol</div>
+    <div style="color:var(--muted);font-size:.9rem;margin-bottom:1.5rem;" id="deleteModalBody"></div>
+    <div style="display:flex;gap:.75rem;justify-content:center;">
+      <button onclick="confirmDeleteOK()" id="deleteModalConfirm" style="background:#ef4444;color:#fff;border:none;border-radius:10px;padding:.6rem 1.4rem;font-weight:800;font-size:.9rem;cursor:pointer;">Supprimer</button>
+      <button onclick="closeDeleteModal()" style="background:var(--border);color:var(--text);border:none;border-radius:10px;padding:.6rem 1.4rem;font-weight:800;font-size:.9rem;cursor:pointer;background:rgba(0,0,0,.07);">Annuler</button>
+    </div>
   </div>
 </div>
 </section>
@@ -1249,7 +1245,7 @@ function confirmDelete(key){
     ? `Remove ${vol} from the dashboard?`
     : `Supprimer ${vol} du dashboard ?`
   document.getElementById('deleteModalConfirm').textContent = lang === 'EN' ? 'Remove' : 'Supprimer'
-  document.getElementById('deleteModal').classList.add('is-active')
+  const m=document.getElementById('deleteModal'); m.style.display='flex';
 }
 
 function confirmDeleteOK(){
@@ -1261,7 +1257,7 @@ function confirmDeleteOK(){
 }
 
 function closeDeleteModal(){
-  document.getElementById('deleteModal').classList.remove('is-active')
+  document.getElementById('deleteModal').style.display='none';
   _pendingDeleteKey = null
 }
 </script>
