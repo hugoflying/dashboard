@@ -262,6 +262,12 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
 .dropdown{ position:relative; }
 .dropdown.is-active .dropdown-menu{ display:block; }
 .dropdown-menu{ display:none; position:absolute; z-index:999; padding-top:4px; }
+.dropdown-content{ background:#fff; border-radius:6px; box-shadow:0 4px 16px rgba(0,0,0,.15); padding:.5rem 0; }
+.dropdown-item{ color:#111827 !important; background:transparent; padding:.4rem 1rem; display:block; cursor:pointer; font-weight:700; font-size:.85rem; }
+.dropdown-item:hover{ background:rgba(0,0,0,.06); }
+html.dark .dropdown-content{ background:#1c1f26; border:1px solid rgba(255,255,255,.1); }
+html.dark .dropdown-item{ color:#f3f4f6 !important; }
+html.dark .dropdown-item:hover{ background:rgba(255,255,255,.08); }
 </style>
 </head>
 
