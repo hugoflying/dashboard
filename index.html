@@ -355,7 +355,7 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
   <div class="legend-item"><div class="legend-dot" style="background:#fee2e2;border:1.5px solid #ef4444;"></div><span id="leg-verylate">Retard &ge; 15 min</span></div>
 </div>
 
-<div id="detailPopup" onmouseleave="closeDetail()"><div class="detail-title" id="detailTitle">—</div><div id="detailContent"></div></div>
+<div id="detailPopup" onmouseleave="scheduleHideDetail()" onmouseenter="clearTimeout(_detailHideTimer)"><div class="detail-title" id="detailTitle">—</div><div id="detailContent"></div></div>
 </section>
 
 <script>
@@ -1002,6 +1002,7 @@ function applyViewMode(){
 // Restore view preference
 applyViewMode()
 
+let _detailHideTimer = null
 function showDetail(key, btn){
   const f = flights.get(key)
   if(!f) return
@@ -1013,10 +1014,12 @@ function showDetail(key, btn){
   if(!popup) return
 
   const vol = (f.__depFF || f.__arrFF || (f.Cie||"")+(f.NVol||"")).trim() || "--"
-  titleEl.textContent = vol + (f.Parking ? " · P"+f.Parking : "")
+  const pRoute = [f.From||"", f.To||""].filter(Boolean).join(" → ")
+  titleEl.innerHTML = '<span style="font-weight:900;">' + vol + '</span>'
+    + (pRoute ? '<span style="font-size:.8rem;font-weight:700;color:var(--muted);margin:0 .4rem;">' + pRoute + '</span>' : '')
+    + (f.Parking ? '<span style="font-size:.8rem;font-weight:900;">P'+f.Parking+'</span>' : '')
 
   const rows = [
-    ["SIBT", f.SIBT], ["AIBT", f.AIBT], ["SOBT", f.SOBT], ["AOBT", f.AOBT],
     ["Avitair ARR", f.ArriveeFuel], ["1er débarqué", f.PremierDebarque],
     ["Der débarqué", f.DernierDebarque], ["Lift ARR ↑", f.ArriveeLiftArr],
     ["Lift ARR ↓", f.DepartLiftArr], ["PNT ARR", f.ArrPNT], ["PNC ARR", f.ArrPNC],
