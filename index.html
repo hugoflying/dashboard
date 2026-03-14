@@ -565,7 +565,7 @@ function render() {
               </div>
               <div style="flex-shrink:0;display:flex;align-items:center;gap:6px;">
                 ${stand ? `<div style="font-size:1.5rem;font-weight:900;line-height:1;">${stand}</div>` : ""}
-                <button class="close-btn" onclick="showDetail(${JSON.stringify(f).replace(/'/g,"&#39;")})" title="Détail" style="align-self:flex-start;font-size:1rem;">ℹ️</button>
+                  <button class="close-btn" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="scheduleHideDetail()" style="font-size:.75rem;font-weight:900;color:#3273dc;border:2px solid #3273dc;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;cursor:pointer;">i</button>
                 <button class="close-btn" onclick="deleteFlight('${f.flightKey}')" title="Fermer" style="align-self:flex-start;">✕</button>
               </div>
             </div>
@@ -1002,48 +1002,53 @@ function applyViewMode(){
 // Restore view preference
 applyViewMode()
 
-function showDetail(key){
-  const title = document.getElementById('detailTitle')
-  const content = document.getElementById('detailContent')
-  const modal = document.getElementById('detailModal')
-  if(!title||!content||!modal) return
+function showDetail(key, btn){
+  const f = flights.get(key)
+  if(!f) return
+  clearTimeout(_detailHideTimer)
+
+  const popup = document.getElementById('detailPopup')
+  const titleEl = document.getElementById('detailTitle')
+  const contentEl = document.getElementById('detailContent')
+  if(!popup) return
 
   const vol = (f.__depFF || f.__arrFF || (f.Cie||"")+(f.NVol||"")).trim() || "--"
-  title.textContent = vol + (f.Parking ? " · P"+f.Parking : "")
+  titleEl.textContent = vol + (f.Parking ? " · P"+f.Parking : "")
 
   const rows = [
-    ["SIBT",             f.SIBT],
-    ["AIBT",             f.AIBT],
-    ["SOBT",             f.SOBT],
-    ["AOBT",             f.AOBT],
-    ["Arrivée Avitair",  f.ArriveeFuel],
-    ["Premier débarqué", f.PremierDebarque],
-    ["Dernier débarqué", f.DernierDebarque],
-    ["Lift arr. (arrivée)",  f.ArriveeLiftArr],
-    ["Lift arr. (départ)",   f.DepartLiftArr],
-    ["Arrivée PNT",      f.ArrPNT],
-    ["Arrivée PNC",      f.ArrPNC],
-    ["Premier embarqué", f.AvionPremierEmbarque],
-    ["Dernier embarqué", f.AvionDernierEmbarque],
-    ["Lift dep. (arrivée)",  f.ArriveeLift],
-    ["Lift dep. (départ)",   f.DepartLift],
-    ["Départ Avitair",   f.DepartFuel],
-    ["Arrivée INAD",     f.ArriveeINAD],
-    ["Remise LID",       f.RemiseLID],
-    ["Fermeture porte",  f.FermeturePorteAvion],
+    ["SIBT", f.SIBT], ["AIBT", f.AIBT], ["SOBT", f.SOBT], ["AOBT", f.AOBT],
+    ["Avitair ARR", f.ArriveeFuel], ["1er débarqué", f.PremierDebarque],
+    ["Der débarqué", f.DernierDebarque], ["Lift ARR ↑", f.ArriveeLiftArr],
+    ["Lift ARR ↓", f.DepartLiftArr], ["PNT ARR", f.ArrPNT], ["PNC ARR", f.ArrPNC],
+    ["1er embarqué", f.AvionPremierEmbarque], ["Der embarqué", f.AvionDernierEmbarque],
+    ["Lift DEP ↑", f.ArriveeLift], ["Lift DEP ↓", f.DepartLift],
+    ["Avitair DEP", f.DepartFuel], ["INAD ARR", f.ArriveeINAD],
+    ["Remise LID", f.RemiseLID], ["Fermeture porte", f.FermeturePorteAvion],
   ]
 
-  content.innerHTML = '<div class="detail-grid">' +
+  contentEl.innerHTML = '<div class="detail-log">' +
     rows.map(([label, val]) => {
       const v = val ? convertTime(val) : ""
-      return `<div class="detail-row">
-        <span class="dk">${label}</span>
-        <span class="dv${v ? "" : " empty"}">${v || "--:--"}</span>
-      </div>`
-    }).join("") +
-  '</div>'
+      const done = !!v
+      return '<div class="detail-log-row">'
+        + '<div class="detail-check ' + (done?'done':'') + '">✓</div>'
+        + '<span class="detail-log-label' + (done?'':" empty") + '">' + label + '</span>'
+        + '<span class="detail-log-time' + (done?'':" empty") + '">' + (v||"–") + '</span>'
+        + '</div>'
+    }).join("") + '</div>'
 
-  modal.style.display = "block"
+  const rect = btn.getBoundingClientRect()
+  popup.style.display = "block"
+  let top = rect.bottom + 8
+  let left = rect.left - 240
+  if(left < 8) left = 8
+  if(top + 500 > window.innerHeight) top = rect.top - popup.offsetHeight - 8
+  popup.style.top = top + "px"
+  popup.style.left = left + "px"
+}
+
+function scheduleHideDetail(){
+  _detailHideTimer = setTimeout(closeDetail, 300)
 }
 
 function closeDetail(){
