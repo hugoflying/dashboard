@@ -239,6 +239,9 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
 #cards.list-view .flight-subtitle{ font-size:.75rem !important; }
 #cards.list-view .mt-3.mb-3{ margin:.3rem 0 !important; }
 #cards.list-view .header-line{ margin-bottom:.2rem !important; }
+#cards.list-view .flight-title{ font-size:1.3rem !important; }
+#cards.list-view .flight-subtitle{ font-size:.85rem !important; }
+#cards.list-view .mt-3.mb-3{ text-align:center !important; }
 @media(max-width:600px){
   #cards.list-view .kv-grid{ grid-template-columns:repeat(3,1fr) !important; }
 }
@@ -501,16 +504,6 @@ function render() {
                 <div class="kv-v">${convertTime(f.SIBT) || "--:--"}</div>
               </div>
 
-              <div class="kv-box" style="background:#16a34a;border-color:#16a34a;">
-                <div class="kv-k" style="color:rgba(255,255,255,.75);">EOBT</div>
-                <div class="kv-v" style="color:#fff;">${eobtStr}</div>
-              </div>
-
-              <div class="kv-box" style="background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);">
-                <div class="kv-k">SOBT</div>
-                <div class="kv-v">${convertTime(f.SOBT) || "--:--"}</div>
-              </div>
-
               ${(()=>{
                 const c = delayColor(f.AIBT, f.SIBT);
                 const s = c ? `background:${c.bg};border-color:${c.border};` : '';
@@ -521,9 +514,19 @@ function render() {
                 </div>`;
               })()}
 
+              <div class="kv-box" style="background:#16a34a;border-color:#16a34a;">
+                <div class="kv-k" style="color:rgba(255,255,255,.75);">EOBT</div>
+                <div class="kv-v" style="color:#fff;">${eobtStr}</div>
+              </div>
+
               <div class="kv-box" style="${cd.over ? 'background:#fee2e2;border-color:#fca5a5;' : 'background:#93c5fd;border-color:#93c5fd;'}">
                 <div class="kv-k" style="${cd.over ? 'color:#ef4444;' : 'color:rgba(0,0,0,.55);'}">COUNTDOWN</div>
                 <div class="kv-v" style="${cd.over ? 'color:#ef4444;' : 'color:#111;'}">${cd.text}</div>
+              </div>
+
+              <div class="kv-box" style="background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);">
+                <div class="kv-k">SOBT</div>
+                <div class="kv-v">${convertTime(f.SOBT) || "--:--"}</div>
               </div>
 
               ${(()=>{
