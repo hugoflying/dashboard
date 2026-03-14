@@ -185,7 +185,8 @@ html.dark .tag.is-light{
 
 html.dark #utcToggle,
 html.dark #darkToggle,
-html.dark #langToggle{
+html.dark #langToggle,
+html.dark #sortSelect{
   background: rgba(255,255,255,.08) !important;
   color: var(--text) !important;
   border-color: rgba(255,255,255,.12) !important;
@@ -262,7 +263,15 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
 
   <!-- Gauche : toggles -->
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-    <button id="viewToggle" onclick="toggleView()" class="button is-small is-light" style="font-weight:800;height:32px;">≡</button>
+    <select id="sortSelect" onchange="changeSort(this.value)" class="button is-small is-light" style="font-weight:800;height:32px;padding:0 6px;cursor:pointer;">
+  <option value="EOBT">EOBT</option>
+  <option value="Parking">Parking</option>
+  <option value="SIBT">SIBT</option>
+  <option value="AIBT">AIBT</option>
+  <option value="SOBT">SOBT</option>
+  <option value="AOBT">AOBT</option>
+</select>
+<button id="viewToggle" onclick="toggleView()" class="button is-small is-light" style="font-weight:800;height:32px;">≡</button>
 <button id="darkToggle" onclick="toggleDark()" class="button is-small is-light" style="font-weight:800;height:32px;">CLAIR</button>
     <button id="utcToggle" onclick="toggleUTC()" class="button is-small is-light" style="font-weight:800;height:32px;">LOCAL</button>
     <button id="langToggle" onclick="toggleLang()" class="button is-small is-light" style="font-weight:800;height:32px;">FR</button>
@@ -303,6 +312,7 @@ let socket=null
 let reconnectTimer=null
 let isUTC = localStorage.getItem('dashboard_utc') === '1'
 let viewMode = localStorage.getItem('dashboard_view') || 'cards'
+let sortBy   = localStorage.getItem('dashboard_sort') || 'EOBT'
 let lang  = localStorage.getItem('dashboard_lang') || 'FR'
 const flights=new Map()
 
@@ -442,13 +452,19 @@ function computeStatus(f){
 function render() {
   const cards = document.getElementById("cards");
 
+  function getSortValue(f){
+    if(sortBy === 'EOBT')    return computeEOBT(f) ?? parseHHMM(f.SOBT) ?? parseHHMM(f.SIBT) ?? 9999;
+    if(sortBy === 'Parking') return parseInt(f.Parking||"9999",10);
+    if(sortBy === 'SIBT')    return parseHHMM(f.SIBT)  ?? 9999;
+    if(sortBy === 'AIBT')    return parseHHMM(f.AIBT)  ?? 9999;
+    if(sortBy === 'SOBT')    return parseHHMM(f.SOBT)  ?? 9999;
+    if(sortBy === 'AOBT')    return parseHHMM(f.AOBT)  ?? 9999;
+    return 9999;
+  }
+
   const active = [...flights.values()]
     .filter(isActiveFlight)
-    .sort((a, b) => {
-      const ta = computeEOBT(a) ?? parseHHMM(a.SOBT) ?? parseHHMM(a.SIBT) ?? 9999;
-      const tb = computeEOBT(b) ?? parseHHMM(b.SOBT) ?? parseHHMM(b.SIBT) ?? 9999;
-      return ta - tb;
-    });
+    .sort((a, b) => getSortValue(a) - getSortValue(b));
 
   if (!active.length) {
     cards.innerHTML = `
@@ -880,6 +896,19 @@ function delayColor(actualStr, plannedStr){
   return           { bg:'#fee2e2', border:'#ef4444', text:'#b91c1c' };     // rouge - retard >= 15
 }
 
+
+function changeSort(val){
+  sortBy = val
+  localStorage.setItem('dashboard_sort', val)
+  render()
+}
+
+// Restore sort preference
+if(localStorage.getItem('dashboard_sort')){
+  sortBy = localStorage.getItem('dashboard_sort')
+  const sel = document.getElementById('sortSelect')
+  if(sel) sel.value = sortBy
+}
 function toggleView(){
   viewMode = viewMode === 'cards' ? 'list' : 'cards'
   localStorage.setItem('dashboard_view', viewMode)
