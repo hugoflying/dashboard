@@ -282,39 +282,44 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
   #cards.list-view .kv-grid{ grid-template-columns:repeat(3,1fr) !important; }
 }
 
-/* === Vue carte (full-width, 1 par ligne) === */
+
+
+/* === Dashboard compact === */
 .dashboard-card .card-content{
-  display: flex;
-  align-items: flex-start;
-  gap: 1.2rem;
+  display:flex;
+  align-items:center;
+  gap:.9rem;
+  padding:.6rem .9rem !important;
 }
 .card-left{
-  flex: 0 0 200px;
-  min-width: 0;
+  flex:0 0 180px;
+  min-width:0;
 }
 .card-middle{
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: .5rem;
+  flex:1;
 }
 .card-right{
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  flex-shrink:0;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:3px;
 }
-
-/* kv-grid : 6 colonnes, pleine hauteur */
+.flight-title{ font-size:1.05rem; font-weight:900; }
+.flight-subtitle{ font-size:.72rem; color:var(--muted); }
 .kv-grid{
-  display: grid !important;
-  grid-template-columns: repeat(6, 1fr) !important;
-  gap: .5rem !important;
-  align-items: stretch;
+  display:grid !important;
+  grid-template-columns:repeat(6,1fr) !important;
+  gap:.35rem !important;
 }
-.kv-box{
-  min-height: 56px;
+.kv-box{ padding:.3rem .5rem !important; }
+.kv-k{ font-size:.6rem !important; }
+.kv-v{ font-size:.95rem !important; }
+.status-tag{ font-size:.65rem !important; padding:.2rem .5rem !important; height:auto !important; }
+@media(max-width:700px){
+  .kv-grid{ grid-template-columns:repeat(3,1fr) !important; }
+  .card-left{ flex:1 !important; }
+  .dashboard-card .card-content{ flex-wrap:wrap; }
 }
 </style>
 </head>
