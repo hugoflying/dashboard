@@ -509,7 +509,7 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
   <div class="legend-item"><div class="legend-dot" style="background:#fee2e2;border:1.5px solid #ef4444;"></div><span id="leg-verylate">Retard &ge; 15 min</span></div>
 </div>
 
-<div id="detailPopup" onmouseleave="scheduleHideDetail()" onmouseenter="clearTimeout(_detailHideTimer)"><div class="detail-title" id="detailTitle">—</div><div id="detailContent"></div></div>
+<div id="detailPopup" style="pointer-events:none;"><div class="detail-title" id="detailTitle">—</div><div id="detailContent"></div></div>
 
 <div id="deleteModal" style="display:none;position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;">
   <div onclick="closeDeleteModal()" style="position:absolute;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(2px);"></div>
@@ -731,7 +731,7 @@ function render() {
               </div>
               <div style="flex-shrink:0;display:flex;align-items:center;gap:8px;">
                 ${stand ? `<div style="font-size:1.5rem;font-weight:900;color:var(--muted);line-height:1;">${stand}</div>` : ""}
-                <button class="dc-btn-i" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="scheduleHideDetail()">i</button>
+                <button class="dc-btn-i" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="closeDetail()">i</button>
               </div>
             </div>
 
@@ -791,7 +791,7 @@ function render() {
             </div>
             <div class="dc-right">
               ${stand ? `<div class="dc-stand" style="color:var(--muted);">${stand}</div>` : ""}
-              <button class="dc-btn-i" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="scheduleHideDetail()">i</button>
+              <button class="dc-btn-i" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="closeDetail()">i</button>
             </div>
 
           </div>
@@ -1246,8 +1246,8 @@ document._detailMoveClose = function(e){
 }
 
 function closeDetail(){
-  const modal = document.getElementById('detailModal')
-  if(modal) modal.style.display = "none"
+  const p = document.getElementById('detailPopup')
+  if(p) p.style.display = "none"
 }
 
 let _pendingDeleteKey = null
