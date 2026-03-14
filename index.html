@@ -246,10 +246,10 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
   #cards.list-view .kv-grid{ grid-template-columns:repeat(3,1fr) !important; }
 }
 
-.status-center{ display:none; flex:1; justify-content:center; align-items:center; }
+.status-center{ display:none; position:absolute; left:50%; transform:translateX(-50%); justify-content:center; align-items:center; }
 #cards.list-view .card-status-block{ display:none !important; }
 #cards.list-view .status-center{ display:flex !important; }
-#cards.list-view .header-line{ align-items:center !important; }
+#cards.list-view .header-line{ align-items:center !important; position:relative !important; }
 </style>
 </head>
 
