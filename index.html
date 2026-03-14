@@ -453,54 +453,62 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
 
 
 
+#cards.list-view .dc-center{ grid-template-columns:repeat(3,1fr) !important; }
+}
+
 /* List view layout */
+#cards.list-view .column{ width:100% !important; flex:none !important; padding:.2rem 0 !important; }
 #cards.list-view .dashboard-card .card-content{
-  display:grid !important;
-  grid-template-columns: 220px 1fr auto !important;
-  grid-template-rows: auto auto !important;
-  align-items:center !important;
+  display:flex !important;
+  flex-direction:column !important;
   padding:.55rem .8rem !important;
-  gap:.6rem !important;
+  gap:.4rem !important;
 }
 .dc-status{ display:none; }
+#cards.list-view .header-line{ display:none !important; }
+#cards.list-view .mt-3.mb-3{ display:none !important; }
+#cards.list-view .kv-grid{ display:none !important; }
+
+/* Row 1: left info + timings + right buttons */
+#cards.list-view .dc-row1{
+  display:flex;
+  align-items:center;
+  gap:.6rem;
+  width:100%;
+}
 #cards.list-view .dc-left{
   display:flex !important;
   flex-direction:column;
   justify-content:center;
-  grid-column:1;
-  grid-row:1;
+  flex:0 0 200px;
+  min-width:0;
 }
 #cards.list-view .dc-center{
   display:grid !important;
   grid-template-columns:repeat(6,1fr);
   gap:.35rem;
-  grid-column:2;
-  grid-row:1;
+  flex:1;
   align-items:stretch;
 }
 #cards.list-view .dc-right{
   display:flex !important;
   flex-direction:column;
   align-items:center;
-  gap:4px;
-  grid-column:3;
-  grid-row:1 / 3;
-  align-self:start;
+  gap:3px;
+  flex-shrink:0;
 }
+/* Row 2: status centered */
 #cards.list-view .dc-status{
   display:flex !important;
-  grid-column:2;
-  grid-row:2;
-  align-items:center;
+  justify-content:center;
+  width:100%;
+  padding:.1rem 0;
 }
-#cards.list-view .header-line{ display:none !important; }
-#cards.list-view .mt-3.mb-3{ display:none !important; }
-#cards.list-view .kv-grid{ display:none !important; }
 #cards.list-view .dc-left .flight-title{ font-size:1.35rem !important; }
 #cards.list-view .dc-left .flight-subtitle{ font-size:.72rem !important; font-weight:700; color:var(--muted); }
 @media(max-width:900px){
-  #cards.list-view .dashboard-card .card-content{ grid-template-columns:1fr !important; }
   #cards.list-view .dc-center{ grid-template-columns:repeat(3,1fr) !important; }
+  #cards.list-view .dc-left{ flex:1 !important; }
 }
 </style>
 </head>
@@ -806,6 +814,7 @@ function render() {
             </div>
 
             <!-- LISTE MODE -->
+            <div class="dc-row1">
             <div class="dc-left">
               <div class="flight-title">${arrVol}</div>
               ${f.Callsign ? `<div class="flight-subtitle" style="font-weight:700;">${f.Callsign}</div>` : ""}
@@ -831,13 +840,14 @@ function render() {
               ${(()=>{ const c=delayColor(f.AOBT,f.SOBT); const s=c?`background:${c.bg};border-color:${c.border};`:''; const t=c?`color:${c.text};`:'';
                 return `<div class="kv-box" style="${s}"><div class="kv-k">AOBT</div><div class="kv-v" style="${t}">${convertTime(f.AOBT)||"--:--"}</div></div>`; })()}
             </div>
-            <div class="dc-status">
-              <span class="tag ${status.tagClass} is-medium status-tag">${status.text}</span>
-            </div>
             <div class="dc-right">
               ${stand ? `<div class="dc-stand">${stand}</div>` : ""}
               <button class="dc-btn" onclick="deleteFlight('${f.flightKey}')" title="Fermer">✕</button>
               <button class="dc-btn-i" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="scheduleHideDetail()">i</button>
+            </div>
+            </div><!-- end dc-row1 -->
+            <div class="dc-status">
+              <span class="tag ${status.tagClass} is-medium status-tag">${status.text}</span>
             </div>
 
           </div>
