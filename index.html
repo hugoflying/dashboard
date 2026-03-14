@@ -485,9 +485,11 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
 #cards.list-view .dc-center{
   display:grid !important;
   grid-template-columns:repeat(6,1fr);
+  grid-template-rows:1fr;
   gap:.4rem;
   flex:1;
   min-width:0;
+  overflow:hidden;
 }
 #cards.list-view .dc-right{
   display:flex !important;
