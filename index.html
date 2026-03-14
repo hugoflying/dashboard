@@ -1233,26 +1233,30 @@ function showDetail(key, btn){
     + '</div>'
     + (pRoute ? '<div style="font-size:.82rem;font-weight:700;color:var(--muted);margin-top:2px;">' + pRoute + '</div>' : '')
 
-  const rows = [
-    ["Avitair ARR", f.ArriveeFuel], ["1er débarqué", f.PremierDebarque],
-    ["Der débarqué", f.DernierDebarque], ["Lift ARR ↑", f.ArriveeLiftArr],
-    ["Lift ARR ↓", f.DepartLiftArr], ["PNT ARR", f.ArrPNT], ["PNC ARR", f.ArrPNC],
-    ["1er embarqué", f.AvionPremierEmbarque], ["Der embarqué", f.AvionDernierEmbarque],
-    ["Lift DEP ↑", f.ArriveeLift], ["Lift DEP ↓", f.DepartLift],
-    ["Avitair DEP", f.DepartFuel], ["INAD ARR", f.ArriveeINAD],
-    ["Remise LID", f.RemiseLID], ["Fermeture porte", f.FermeturePorteAvion],
+  const rowGroups = [
+    [["Arrivée PNT", f.ArrPNT], ["Arrivée PNC", f.ArrPNC]],
+    [["Arrivée Avitair", f.ArriveeFuel], ["Départ Avitair", f.DepartFuel]],
+    [["Lift ARR ↑", f.ArriveeLiftArr], ["Lift ARR ↓", f.DepartLiftArr]],
+    [["Premier débarqué", f.PremierDebarque], ["Dernier débarqué", f.DernierDebarque]],
+    [["Lift DEP ↑", f.ArriveeLift], ["Lift DEP ↓", f.DepartLift]],
+    [["Premier embarqué", f.AvionPremierEmbarque], ["Dernier embarqué", f.AvionDernierEmbarque]],
+    [["Remise LID/LDS", f.RemiseLID]],
+    [["Fermeture porte", f.FermeturePorteAvion]],
   ]
 
+  const sep = '<div style="height:1px;background:var(--border);margin:.3rem 0;"></div>'
   contentEl.innerHTML = '<div class="detail-log">' +
-    rows.map(([label, val]) => {
-      const v = val ? convertTime(val) : ""
-      const done = !!v
-      return '<div class="detail-log-row">'
-        + '<div class="detail-check ' + (done?'done':'') + '">✓</div>'
-        + '<span class="detail-log-label' + (done?'':" empty") + '">' + label + '</span>'
-        + '<span class="detail-log-time' + (done?'':" empty") + '">' + (v||"–") + '</span>'
-        + '</div>'
-    }).join("") + '</div>'
+    rowGroups.map((group, gi) =>
+      group.map(([label, val]) => {
+        const v = val ? convertTime(val) : ""
+        const done = !!v
+        return '<div class="detail-log-row">'
+          + '<div class="detail-check ' + (done?'done':'') + '">✓</div>'
+          + '<span class="detail-log-label' + (done?'':" empty") + '">' + label + '</span>'
+          + '<span class="detail-log-time' + (done?'':" empty") + '">' + (v||"–") + '</span>'
+          + '</div>'
+      }).join("") + (gi < rowGroups.length-1 ? sep : '')
+    ).join("") + '</div>'
 
   const rect = btn.getBoundingClientRect()
   popup.style.display = "block"
