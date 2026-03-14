@@ -811,8 +811,7 @@ function render() {
               <div class="kv-box" style="background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);">
                 <div class="kv-k">SIBT</div><div class="kv-v">${convertTime(f.SIBT)||"--:--"}</div>
               </div>
-              ${(()=>{ const c=delayColor(f.AIBT,f.SIBT); const s=c?`background:${c.bg};border-color:${c.border};`:''; const t=c?`color:${c.text};`:'';
-                return `<div class="kv-box" style="${s}"><div class="kv-k">AIBT</div><div class="kv-v" style="${t}">${convertTime(f.AIBT)||"--:--"}</div></div>`; })()}
+              <div class="kv-box"><div class="kv-k">AIBT</div><div class="kv-v">${convertTime(f.AIBT)||"--:--"}</div></div>
               <div class="kv-box" style="background:#16a34a;border-color:#16a34a;">
                 <div class="kv-k" style="color:rgba(255,255,255,.75);">EOBT</div><div class="kv-v" style="color:#fff;">${eobtStr}</div>
               </div>
@@ -823,8 +822,7 @@ function render() {
               <div class="kv-box" style="background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);">
                 <div class="kv-k">SOBT</div><div class="kv-v">${convertTime(f.SOBT)||"--:--"}</div>
               </div>
-              ${(()=>{ const c=delayColor(f.AOBT,f.SOBT); const s=c?`background:${c.bg};border-color:${c.border};`:''; const t=c?`color:${c.text};`:'';
-                return `<div class="kv-box" style="${s}"><div class="kv-k">AOBT</div><div class="kv-v" style="${t}">${convertTime(f.AOBT)||"--:--"}</div></div>`; })()}
+              <div class="kv-box"><div class="kv-k">AOBT</div><div class="kv-v">${convertTime(f.AOBT)||"--:--"}</div></div>
             </div>
             <div class="dc-right">
               ${stand ? `<div class="dc-stand" style="color:var(--muted);">${stand}</div>` : ""}
