@@ -330,6 +330,7 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
 #cards.list-view 
 #cards.list-view 
 #cards.list-view .kv-grid{ display:none !important; }
+#cards.list-view .dc-center .kv-box{ min-width:0; }
 #cards.list-view 
 #cards.list-view 
 #cards.list-view 
@@ -471,6 +472,7 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
 #cards.list-view .header-line{ display:none !important; }
 #cards.list-view .mt-3.mb-3{ display:none !important; }
 #cards.list-view .kv-grid{ display:none !important; }
+#cards.list-view .dc-center .kv-box{ min-width:0; }
 #cards.list-view .dc-row1{ display:contents !important; }
 .dc-left{ display:none; }
 .dc-center{ display:none; }
@@ -487,6 +489,8 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
   grid-template-columns:repeat(6,1fr);
   gap:.35rem;
   flex:1;
+  min-width:0;
+  overflow:hidden;
 }
 #cards.list-view .dc-right{
   display:flex !important;
