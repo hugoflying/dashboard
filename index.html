@@ -268,6 +268,53 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
 html.dark .dropdown-content{ background:#1c1f26; border:1px solid rgba(255,255,255,.1); }
 html.dark .dropdown-item{ color:#f3f4f6 !important; }
 html.dark .dropdown-item:hover{ background:rgba(255,255,255,.08); }
+
+#detailModal{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:9000;
+}
+#detailBackdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.45);
+}
+#detailBox{
+  position:absolute;
+  left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  background:var(--card);
+  border-radius:16px;
+  padding:1.25rem;
+  width:min(520px,calc(100vw - 24px));
+  max-height:80vh;
+  overflow-y:auto;
+  box-shadow:0 16px 48px rgba(0,0,0,.18);
+}
+.detail-title{
+  font-size:1.1rem;
+  font-weight:900;
+  margin-bottom:1rem;
+}
+.detail-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:.5rem .75rem;
+}
+.detail-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:.35rem .6rem;
+  border-radius:8px;
+  background:rgba(0,0,0,.03);
+  font-size:.85rem;
+}
+html.dark .detail-row{ background:rgba(255,255,255,.04); }
+.detail-row .dk{ font-weight:700; color:var(--muted); }
+.detail-row .dv{ font-weight:900; }
+.detail-row .dv.empty{ color:var(--muted); font-weight:400; }
 </style>
 </head>
 
@@ -328,6 +375,17 @@ html.dark .dropdown-item:hover{ background:rgba(255,255,255,.08); }
   <div class="legend-item"><div class="legend-dot" style="background:#dcfce7;border:1.5px solid #16a34a;"></div><span id="leg-ontime">A l'heure</span></div>
   <div class="legend-item"><div class="legend-dot" style="background:#ffedd5;border:1.5px solid #f97316;"></div><span id="leg-late">Retard &lt; 15 min</span></div>
   <div class="legend-item"><div class="legend-dot" style="background:#fee2e2;border:1.5px solid #ef4444;"></div><span id="leg-verylate">Retard &ge; 15 min</span></div>
+</div>
+
+<div id="detailModal">
+  <div id="detailBackdrop" onclick="closeDetail()"></div>
+  <div id="detailBox">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;">
+      <div class="detail-title" id="detailTitle">—</div>
+      <button class="button is-small is-light" onclick="closeDetail()">✕</button>
+    </div>
+    <div id="detailContent"></div>
+  </div>
 </div>
 </section>
 
@@ -538,6 +596,7 @@ function render() {
               </div>
               <div style="flex-shrink:0;display:flex;align-items:center;gap:6px;">
                 ${stand ? `<div style="font-size:1.5rem;font-weight:900;line-height:1;">${stand}</div>` : ""}
+                <button class="close-btn" onclick="showDetail(${JSON.stringify(f).replace(/'/g,"&#39;")})" title="Détail" style="align-self:flex-start;font-size:1rem;">ℹ️</button>
                 <button class="close-btn" onclick="deleteFlight('${f.flightKey}')" title="Fermer" style="align-self:flex-start;">✕</button>
               </div>
             </div>
@@ -973,6 +1032,55 @@ function applyViewMode(){
 
 // Restore view preference
 applyViewMode()
+
+function showDetail(key){
+  const title = document.getElementById('detailTitle')
+  const content = document.getElementById('detailContent')
+  const modal = document.getElementById('detailModal')
+  if(!title||!content||!modal) return
+
+  const vol = (f.__depFF || f.__arrFF || (f.Cie||"")+(f.NVol||"")).trim() || "--"
+  title.textContent = vol + (f.Parking ? " · P"+f.Parking : "")
+
+  const rows = [
+    ["SIBT",             f.SIBT],
+    ["AIBT",             f.AIBT],
+    ["SOBT",             f.SOBT],
+    ["AOBT",             f.AOBT],
+    ["Arrivée Avitair",  f.ArriveeFuel],
+    ["Premier débarqué", f.PremierDebarque],
+    ["Dernier débarqué", f.DernierDebarque],
+    ["Lift arr. (arrivée)",  f.ArriveeLiftArr],
+    ["Lift arr. (départ)",   f.DepartLiftArr],
+    ["Arrivée PNT",      f.ArrPNT],
+    ["Arrivée PNC",      f.ArrPNC],
+    ["Premier embarqué", f.AvionPremierEmbarque],
+    ["Dernier embarqué", f.AvionDernierEmbarque],
+    ["Lift dep. (arrivée)",  f.ArriveeLift],
+    ["Lift dep. (départ)",   f.DepartLift],
+    ["Départ Avitair",   f.DepartFuel],
+    ["Arrivée INAD",     f.ArriveeINAD],
+    ["Remise LID",       f.RemiseLID],
+    ["Fermeture porte",  f.FermeturePorteAvion],
+  ]
+
+  content.innerHTML = '<div class="detail-grid">' +
+    rows.map(([label, val]) => {
+      const v = val ? convertTime(val) : ""
+      return `<div class="detail-row">
+        <span class="dk">${label}</span>
+        <span class="dv${v ? "" : " empty"}">${v || "--:--"}</span>
+      </div>`
+    }).join("") +
+  '</div>'
+
+  modal.style.display = "block"
+}
+
+function closeDetail(){
+  const modal = document.getElementById('detailModal')
+  if(modal) modal.style.display = "none"
+}
 </script>
 
 </body>
