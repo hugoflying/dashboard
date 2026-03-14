@@ -245,6 +245,11 @@ html.dark .kv-box[style*="rgba(0,0,0,.04)"]{
 @media(max-width:600px){
   #cards.list-view .kv-grid{ grid-template-columns:repeat(3,1fr) !important; }
 }
+
+.status-center{ display:none; flex:1; justify-content:center; align-items:center; }
+#cards.list-view .card-status-block{ display:none !important; }
+#cards.list-view .status-center{ display:flex !important; }
+#cards.list-view .header-line{ align-items:center !important; }
 </style>
 </head>
 
@@ -485,13 +490,16 @@ function render() {
                 <div class="flight-subtitle">${sub1}</div>
                 ${sub2 ? `<div class="flight-subtitle">${sub2}</div>` : ""}
               </div>
+              <div class="status-center">
+                <span class="tag ${status.tagClass} is-medium status-tag">${status.text}</span>
+              </div>
               <div style="flex-shrink:0;display:flex;align-items:center;gap:6px;">
                 ${stand ? `<div style="font-size:1.5rem;font-weight:900;line-height:1;">${stand}</div>` : ""}
                 <button class="close-btn" onclick="deleteFlight('${f.flightKey}')" title="Fermer" style="align-self:flex-start;">✕</button>
               </div>
             </div>
 
-            <div class="mt-3 mb-3">
+            <div class="mt-3 mb-3 card-status-block">
               <span class="tag ${status.tagClass} is-medium status-tag">
                 ${status.text}
               </span>
