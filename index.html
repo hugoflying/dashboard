@@ -510,6 +510,23 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
 </div>
 
 <div id="detailPopup" onmouseleave="scheduleHideDetail()" onmouseenter="clearTimeout(_detailHideTimer)" style="pointer-events:auto;"><div class="detail-title" id="detailTitle">—</div><div id="detailContent"></div></div>
+
+<div id="deleteModal" class="modal">
+  <div class="modal-background" onclick="closeDeleteModal()"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title" id="deleteModalTitle">Supprimer le vol</p>
+      <button class="delete" onclick="closeDeleteModal()"></button>
+    </header>
+    <section class="modal-card-body">
+      <p id="deleteModalBody">Voulez-vous supprimer ce vol du dashboard ?</p>
+    </section>
+    <footer class="modal-card-foot">
+      <button class="button is-danger" id="deleteModalConfirm" onclick="confirmDeleteOK()">Supprimer</button>
+      <button class="button" onclick="closeDeleteModal()">Annuler</button>
+    </footer>
+  </div>
+</div>
 </section>
 
 <script>
@@ -705,7 +722,7 @@ function render() {
 
     return `
       <div class="column is-4-desktop is-6-tablet is-12-mobile">
-        <div class="card dashboard-card">
+        <div class="card dashboard-card" ondblclick="confirmDelete('${f.flightKey}')" style="cursor:pointer;">
           <div class="card-content">
 
             <!-- CARTE MODE -->
@@ -719,7 +736,6 @@ function render() {
               <div style="flex-shrink:0;display:flex;align-items:center;gap:5px;">
                 ${stand ? `<div style="font-size:1.5rem;font-weight:900;line-height:1;">${stand}</div>` : ""}
                 <button class="dc-btn-i" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="scheduleHideDetail()">i</button>
-                <button class="close-btn" onclick="deleteFlight('${f.flightKey}')" title="Fermer" style="align-self:flex-start;">✕</button>
               </div>
             </div>
 
@@ -779,7 +795,6 @@ function render() {
             </div>
             <div class="dc-right">
               ${stand ? `<div class="dc-stand">${stand}</div>` : ""}
-              <button class="dc-btn" onclick="deleteFlight('${f.flightKey}')" title="Fermer">✕</button>
               <button class="dc-btn-i" onmouseenter="showDetail('${f.flightKey}', this)" onmouseleave="scheduleHideDetail()">i</button>
             </div>
 
@@ -1220,6 +1235,34 @@ function scheduleHideDetail(){
 function closeDetail(){
   const modal = document.getElementById('detailModal')
   if(modal) modal.style.display = "none"
+}
+
+let _pendingDeleteKey = null
+
+function confirmDelete(key){
+  const f = flights.get(key)
+  if(!f) return
+  _pendingDeleteKey = key
+  const vol = (f.__depFF || f.__arrFF || (f.Cie||"")+(f.NVol||"")).trim() || "--"
+  document.getElementById('deleteModalTitle').textContent = lang === 'EN' ? 'Remove flight' : 'Supprimer le vol'
+  document.getElementById('deleteModalBody').textContent = lang === 'EN'
+    ? `Remove ${vol} from the dashboard?`
+    : `Supprimer ${vol} du dashboard ?`
+  document.getElementById('deleteModalConfirm').textContent = lang === 'EN' ? 'Remove' : 'Supprimer'
+  document.getElementById('deleteModal').classList.add('is-active')
+}
+
+function confirmDeleteOK(){
+  if(_pendingDeleteKey){
+    deleteFlight(_pendingDeleteKey)
+    _pendingDeleteKey = null
+  }
+  closeDeleteModal()
+}
+
+function closeDeleteModal(){
+  document.getElementById('deleteModal').classList.remove('is-active')
+  _pendingDeleteKey = null
 }
 </script>
 
