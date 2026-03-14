@@ -503,6 +503,34 @@ html.dark .detail-log-row{ border-color:rgba(255,255,255,.06); }
 @media(max-width:900px){
   #cards.list-view .dc-center{ grid-template-columns:repeat(3,1fr) !important; }
 }
+
+.dc-status{ display:none; }
+#cards.list-view .dc-status{
+  display:flex !important;
+  align-items:center;
+  flex-shrink:0;
+}
+#cards.list-view .dashboard-card .card-content{
+  flex-wrap:wrap;
+  align-items:stretch;
+}
+#cards.list-view .dc-left{
+  flex:0 0 190px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+#cards.list-view .dc-center{
+  flex:1;
+  min-width:0;
+}
+/* Status + right on same row below */
+#cards.list-view .dc-status{
+  order:3;
+  width:auto;
+  flex:0 0 auto;
+  padding-top:.3rem;
+}
 </style>
 </head>
 
@@ -832,6 +860,9 @@ function render() {
               </div>
               ${(()=>{ const c=delayColor(f.AOBT,f.SOBT); const s=c?`background:${c.bg};border-color:${c.border};`:''; const t=c?`color:${c.text};`:'';
                 return `<div class="kv-box" style="${s}"><div class="kv-k">AOBT</div><div class="kv-v" style="${t}">${convertTime(f.AOBT)||"--:--"}</div></div>`; })()}
+            </div>
+            <div class="dc-status">
+              <span class="tag ${status.tagClass} is-medium status-tag">${status.text}</span>
             </div>
             <div class="dc-right">
               ${stand ? `<div class="dc-stand">${stand}</div>` : ""}
